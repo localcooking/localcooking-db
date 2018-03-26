@@ -1,6 +1,6 @@
 name:                localcooking-db
-version:             0.1.0.0
-github:              "githubuser/localcooking-db"
+version:             0.0.0
+git:                 "git://git.localcooking.com/localcoooking/localcooking-db.git"
 license:             BSD3
 author:              "Athan Clark"
 maintainer:          "athan.clark@localcooking.com"
@@ -21,8 +21,12 @@ description:         Please see the README on Github at <https://github.com/gith
 
 dependencies:
 - base >= 4.8 && < 5
+- localcooking-shared
+- bytestring
+- emailaddress
 - persistent
 - persistent-template
+- text
 
 library:
   source-dirs: src
