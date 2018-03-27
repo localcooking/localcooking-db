@@ -9,7 +9,6 @@
 
 module LocalCooking.Database.Schema.Auth where
 
-import LocalCooking.Database.Schema.Device (RegisteredDeviceTokenId)
 import LocalCooking.Database.Schema.User (UserId)
 import LocalCooking.Common.AuthToken (AuthToken)
 
@@ -18,12 +17,11 @@ import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkM
 
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
+-- acknowledged AuthTokens as bona-fide
 RegisteredAuthToken
     authToken AuthToken
-    authTokenDevice RegisteredDeviceTokenId
     authTokenOwner UserId
     UniqueAuthToken authToken
-    AuthTokenDevice authTokenDevice
     AuthTokenOwner authTokenOwner
     deriving Eq Show
 |]

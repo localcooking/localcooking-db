@@ -9,6 +9,7 @@
 
 module LocalCooking.Database.Schema.Facebook where
 
+import LocalCooking.Database.Schema.User (UserId)
 import Facebook.User (FacebookUserAccessToken, FacebookUserId)
 
 import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)
@@ -24,6 +25,8 @@ FacebookUserAccessTokenStored
 
 FacebookUserDetails
     facebookUserId FacebookUserId
-    UniqueFacebookUserID facebookUserId
+    facebookUserOwner UserId
+    UniqueFacebookUserId facebookUserId
+    FacebookUserDetailsOwner facebookUserOwner
     deriving Eq Show
 |]

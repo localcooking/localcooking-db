@@ -24,8 +24,11 @@ dependencies:
 - localcooking-shared
 - bytestring
 - emailaddress
+- monad-logger
+- mtl
 - persistent
 - persistent-template
+- resourcet
 - text
 
 library:
