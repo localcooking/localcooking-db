@@ -17,41 +17,40 @@ import Facebook.User (FacebookUserId, FacebookUserAccessToken)
 
 import Data.List.NonEmpty (NonEmpty (..))
 import Control.Monad (forM_)
-import Control.Monad.Reader (runReaderT)
 import Text.EmailAddress (EmailAddress)
 import Database.Persist (Entity (..), insert, insert_, delete, get, getBy)
-import Database.Persist.Sql (SqlBackend)
+import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
 
 
-registerUser :: SqlBackend
+registerUser :: ConnectionPool
              -> NonEmpty EmailAddress
              -> HashedPassword
              -> IO UserId
 registerUser backend (e:|es) password =
-  flip runReaderT backend $ do
+  flip runSqlPool backend $ do
     userId <- insert $ User password
     forM_ (e:es) $ \e' ->
       insert $ EmailAddressStored e' userId
     pure userId
 
 
-registerFBUserId :: SqlBackend
+registerFBUserId :: ConnectionPool
                  -> UserId
                  -> FacebookUserId
                  -> IO ()
 registerFBUserId backend userId fbUserId =
-  flip runReaderT backend $
+  flip runSqlPool backend $
     insert_ $ FacebookUserDetails fbUserId userId
 
 
-login :: SqlBackend
+login :: ConnectionPool
       -> EmailAddress
       -> HashedPassword
       -> IO (Maybe AuthToken)
 login backend email password = do
   authToken <- genAuthToken
-  flip runReaderT backend $ do
+  flip runSqlPool backend $ do
     mEmail <- getBy $ UniqueEmailAddress email
     case mEmail of
       Nothing -> pure Nothing
@@ -67,13 +66,14 @@ login backend email password = do
             | otherwise -> pure Nothing
 
 
-loginWithFB :: SqlBackend
+-- | NOTE: Doesn't verify the authenticity of FacebookUserAccessToken
+loginWithFB :: ConnectionPool
             -> FacebookUserAccessToken
             -> FacebookUserId
             -> IO (Maybe AuthToken)
 loginWithFB backend fbToken fbUserId = do
   authToken <- genAuthToken
-  flip runReaderT backend $ do
+  flip runSqlPool backend $ do
     mDetails <- getBy $ UniqueFacebookUserId fbUserId
     case mDetails of
       Nothing -> pure Nothing

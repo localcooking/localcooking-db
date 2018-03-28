@@ -25,7 +25,6 @@ dependencies:
 - bytestring
 - emailaddress
 - monad-logger
-- mtl
 - persistent
 - persistent-template
 - resourcet
