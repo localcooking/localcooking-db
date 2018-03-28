@@ -13,7 +13,7 @@ import LocalCooking.Database.Schema.Auth
   )
 import LocalCooking.Common.Password (HashedPassword)
 import LocalCooking.Common.AuthToken (AuthToken, genAuthToken)
-import Facebook.User (FacebookUserId, FacebookUserAccessToken)
+import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
 import Data.List.NonEmpty (NonEmpty (..))
 import Control.Monad (forM_)

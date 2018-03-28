@@ -10,7 +10,7 @@
 module LocalCooking.Database.Schema.Facebook where
 
 import LocalCooking.Database.Schema.User (UserId)
-import Facebook.User (FacebookUserAccessToken, FacebookUserId)
+import Facebook.Types (FacebookUserAccessToken, FacebookUserId)
 
 import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)
 
