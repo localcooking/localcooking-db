@@ -32,6 +32,7 @@ dependencies:
 - persistent
 - persistent-template
 - resourcet
+- saltine
 - text
 
 library:
