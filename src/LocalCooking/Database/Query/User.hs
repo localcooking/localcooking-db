@@ -10,6 +10,7 @@ import LocalCooking.Database.Schema.User
   )
 import LocalCooking.Database.Schema.Auth
   ( RegisteredAuthToken (..)
+  , Unique (..)
   )
 import LocalCooking.Common.Password (HashedPassword)
 import LocalCooking.Common.AuthToken (AuthToken, genAuthToken)
@@ -81,3 +82,25 @@ loginWithFB backend fbToken fbUserId = do
         insert_ $ FacebookUserAccessTokenStored fbToken fbUserIdId
         insert_ $ RegisteredAuthToken authToken userId
         pure (Just authToken)
+
+
+usersAuthToken :: ConnectionPool
+               -> AuthToken
+               -> IO (Maybe UserId)
+usersAuthToken backend authToken =
+  flip runSqlPool backend $ do
+    mRegistered <- getBy $ UniqueAuthToken authToken
+    case mRegistered of
+      Nothing -> pure Nothing
+      Just (Entity _ (RegisteredAuthToken _ userId)) -> pure (Just userId)
+
+
+logout :: ConnectionPool
+       -> AuthToken
+       -> IO ()
+logout backend authToken =
+  flip runSqlPool backend $ do
+    mRegistered <- getBy $ UniqueAuthToken authToken
+    case mRegistered of
+      Nothing -> pure ()
+      Just (Entity tokenId _) -> delete tokenId
