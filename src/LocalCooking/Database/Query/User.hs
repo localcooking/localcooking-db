@@ -1,3 +1,7 @@
+{-# LANGUAGE
+    OverloadedStrings
+  #-}
+
 module LocalCooking.Database.Query.User where
 
 import LocalCooking.Database.Schema.Facebook
@@ -16,6 +20,7 @@ import LocalCooking.Common.Password (HashedPassword)
 import LocalCooking.Common.AuthToken (AuthToken, genAuthToken)
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
+import Data.Aeson (ToJSON (..), Value (String))
 import Data.List.NonEmpty (NonEmpty (..))
 import Control.Monad (forM_)
 import Text.EmailAddress (EmailAddress)
@@ -45,26 +50,39 @@ registerFBUserId backend userId fbUserId =
     insert_ $ FacebookUserDetails fbUserId userId
 
 
+data AuthTokenFailure
+  = BadPassword
+  | EmailDoesntExist
+  deriving (Eq, Show)
+
+instance ToJSON AuthTokenFailure where
+  toJSON x = String $ case x of
+    BadPassword -> "bad-password"
+    EmailDoesntExist -> "no-email"
+
+
 login :: ConnectionPool
       -> EmailAddress
       -> HashedPassword
-      -> IO (Maybe AuthToken)
+      -> IO (Either AuthTokenFailure AuthToken)
 login backend email password = do
   authToken <- genAuthToken
   flip runSqlPool backend $ do
     mEmail <- getBy $ UniqueEmailAddress email
     case mEmail of
-      Nothing -> pure Nothing
+      Nothing -> pure (Left EmailDoesntExist)
       Just (Entity email' (EmailAddressStored _ owner)) -> do
         mUser <- get owner
         case mUser of
           Nothing -> do
             -- clean-up:
             delete email'
-            pure Nothing
+            pure (Left EmailDoesntExist)
           Just (User password')
-            | password == password' -> pure (Just authToken)
-            | otherwise -> pure Nothing
+            | password == password' -> do
+                insert_ $ RegisteredAuthToken authToken owner
+                pure (Right authToken)
+            | otherwise -> pure (Left BadPassword)
 
 
 -- | NOTE: Doesn't verify the authenticity of FacebookUserAccessToken

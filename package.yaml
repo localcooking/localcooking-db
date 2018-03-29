@@ -26,6 +26,7 @@ dependencies:
 - base >= 4.8 && < 5
 - localcooking-fb
 - localcooking-shared
+- aeson
 - bytestring
 - emailaddress
 - monad-logger

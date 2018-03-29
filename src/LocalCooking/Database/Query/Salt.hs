@@ -5,8 +5,7 @@ import LocalCooking.Database.Schema.Salt
   )
 import LocalCooking.Common.Password (HashedPassword (..))
 
-import Data.ByteString (ByteString)
-import Database.Persist (Entity (..), insert, insert_, delete, get, getBy, selectFirst)
+import Database.Persist (Entity (..), insert_, selectFirst)
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
 import Crypto.Saltine.Core.Utils (randomByteString)
@@ -21,7 +20,7 @@ getPasswordSalt backend = do
     mSalt <- selectFirst [] []
     case mSalt of
       Nothing -> do
-        insert (PasswordSalt newSalt)
+        insert_ (PasswordSalt newSalt)
         pure newSalt
       Just (Entity _ (PasswordSalt salt)) ->
         pure salt
