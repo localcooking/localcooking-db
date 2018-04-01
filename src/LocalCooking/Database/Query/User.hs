@@ -31,6 +31,11 @@ import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
 data RegisterFailure
   = EmailExists
+  deriving (Eq, Show)
+
+instance ToJSON RegisterFailure where
+  toJSON x = String $ case x of
+    EmailExists -> "email-exists"
 
 
 registerUser :: ConnectionPool
