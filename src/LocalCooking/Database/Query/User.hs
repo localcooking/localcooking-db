@@ -29,16 +29,23 @@ import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
 
 
+data RegisterFailure
+  = EmailExists
+
+
 registerUser :: ConnectionPool
-             -> NonEmpty EmailAddress
+             -> EmailAddress
              -> HashedPassword
-             -> IO UserId
-registerUser backend (e:|es) password =
+             -> IO (Either RegisterFailure UserId)
+registerUser backend email password =
   flip runSqlPool backend $ do
-    userId <- insert $ User password
-    forM_ (e:es) $ \e' ->
-      insert $ EmailAddressStored e' userId
-    pure userId
+    mEnt <- getBy $ UniqueEmailAddress email
+    case mEnt of
+      Just _ -> pure (Left EmailExists)
+      Nothing -> do
+        userId <- insert $ User password
+        insert_ $ EmailAddressStored email userId
+        pure (Right userId)
 
 
 registerFBUserId :: ConnectionPool
