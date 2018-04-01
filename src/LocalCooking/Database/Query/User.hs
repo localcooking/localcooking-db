@@ -9,7 +9,7 @@ import LocalCooking.Database.Schema.Facebook
   , Unique (..)
   )
 import LocalCooking.Database.Schema.User
-  ( User (..), EmailAddressStored (..), UserId
+  ( User (..), EmailAddressStored (..), UserId, PendingRegistrationConfirm (..)
   , Unique (..)
   )
 import LocalCooking.Database.Schema.Auth
@@ -50,7 +50,25 @@ registerUser backend email password =
       Nothing -> do
         userId <- insert $ User password
         insert_ $ EmailAddressStored email userId
+        insert_ $ PendingRegistrationConfirm userId
         pure (Right userId)
+
+
+confirmEmail :: ConnectionPool
+             -> EmailAddress
+             -> IO Bool
+confirmEmail backend email =
+  flip runSqlPool backend $ do
+    mUserEnt <- getBy $ UniqueEmailAddress email
+    case mUserEnt of
+      Nothing -> pure False
+      Just (Entity _ (EmailAddressStored _ owner)) -> do
+        mPendingEnt <- getBy $ UniquePendingRegistration owner
+        case mPendingEnt of
+          Nothing -> pure False
+          Just (Entity pendingKey _) -> do
+            delete pendingKey
+            pure True
 
 
 registerFBUserId :: ConnectionPool
@@ -84,6 +102,7 @@ login backend email password = do
     case mEmail of
       Nothing -> pure (Left EmailDoesntExist)
       Just (Entity email' (EmailAddressStored _ owner)) -> do
+        -- no need to check for pending email here - only when filing orders, stuff like that
         mUser <- get owner
         case mUser of
           Nothing -> do

@@ -26,4 +26,9 @@ EmailAddressStored
     UniqueEmailAddress emailAddress
     EmailAddressOwner emailAddressOwner
     deriving Eq Show
+
+PendingRegistrationConfirm
+    pendingRegister UserId
+    UniquePendingRegistration pendingRegister
+    deriving Eq Show
 |]
