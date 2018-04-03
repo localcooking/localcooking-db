@@ -71,6 +71,21 @@ confirmEmail backend email =
             pure True
 
 
+getEmail :: ConnectionPool
+         -> AuthToken
+         -> IO (Maybe EmailAddress)
+getEmail backend authToken =
+  flip runSqlPool backend $ do
+    mRegAuth <- getBy $ UniqueAuthToken authToken
+    case mRegAuth of
+      Nothing -> pure Nothing
+      Just (Entity _ (RegisteredAuthToken _ owner)) -> do
+        mEmailEnt <- getBy $ EmailAddressOwner owner
+        case mEmailEnt of
+          Nothing -> pure Nothing
+          Just (Entity _ (EmailAddressStored email _)) -> pure (Just email)
+
+
 registerFBUserId :: ConnectionPool
                  -> UserId
                  -> FacebookUserId
