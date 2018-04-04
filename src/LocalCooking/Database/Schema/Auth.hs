@@ -22,6 +22,5 @@ RegisteredAuthToken
     authToken AuthToken
     authTokenOwner UserId
     UniqueAuthToken authToken
-    AuthTokenOwner authTokenOwner
     deriving Eq Show
 |]
