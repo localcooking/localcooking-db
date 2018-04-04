@@ -5,7 +5,7 @@
 module LocalCooking.Database.Query.User where
 
 import LocalCooking.Database.Schema.Facebook
-  ( FacebookUserDetailsId, FacebookUserDetails (..), FacebookUserAccessTokenStored (..)
+  ( FacebookUserDetails (..), FacebookUserAccessTokenStored (..)
   , Unique (..)
   )
 import LocalCooking.Database.Schema.User
@@ -15,17 +15,17 @@ import LocalCooking.Database.Schema.User
 import LocalCooking.Database.Schema.Auth
   ( RegisteredAuthToken (..)
   , Unique (..)
+  , EntityField (RegisteredAuthTokenAuthTokenIssued)
   )
 import LocalCooking.Common.Password (HashedPassword)
 import LocalCooking.Common.AuthToken (AuthToken, genAuthToken)
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
 import Data.Aeson (ToJSON (..), Value (String))
-import Data.List.NonEmpty (NonEmpty (..))
-import Data.Time (getCurrentTime)
+import Data.Time (DiffTime, getCurrentTime, addUTCTime)
 import Control.Monad (forM_)
 import Text.EmailAddress (EmailAddress)
-import Database.Persist (Entity (..), insert, insert_, delete, get, getBy)
+import Database.Persist (Entity (..), insert, insert_, delete, get, getBy, selectList, (<.))
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
 
@@ -160,6 +160,16 @@ usersAuthToken backend authToken =
     case mRegistered of
       Nothing -> pure Nothing
       Just (Entity _ (RegisteredAuthToken _ userId _)) -> pure (Just userId)
+
+
+expireAuthTokensSince :: ConnectionPool
+                      -> DiffTime -- ^ positive is age
+                      -> IO ()
+expireAuthTokensSince backend diff = do
+  now <- getCurrentTime
+  flip runSqlPool backend $ do
+    as <- selectList [RegisteredAuthTokenAuthTokenIssued <. (addUTCTime (fromRational $ toRational $ negate diff) now)] []
+    forM_ as $ \(Entity k _) -> delete k
 
 
 logout :: ConnectionPool
