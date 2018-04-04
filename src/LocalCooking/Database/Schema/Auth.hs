@@ -9,18 +9,21 @@
 
 module LocalCooking.Database.Schema.Auth where
 
+
 import LocalCooking.Database.Schema.User (UserId)
 import LocalCooking.Common.AuthToken (AuthToken)
 
 import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)
+import Data.Time (UTCTime)
 
 
-
+-- FIXME replace with a cassandra expiring record or something
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 -- acknowledged AuthTokens as bona-fide
 RegisteredAuthToken
     authToken AuthToken
     authTokenOwner UserId
+    authTokenIssued UTCTime
     UniqueAuthToken authToken
     deriving Eq Show
 |]

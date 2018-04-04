@@ -35,6 +35,7 @@ dependencies:
 - resourcet
 - saltine
 - text
+- time
 
 library:
   source-dirs: src

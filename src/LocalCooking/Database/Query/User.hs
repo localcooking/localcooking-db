@@ -22,6 +22,7 @@ import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
 import Data.Aeson (ToJSON (..), Value (String))
 import Data.List.NonEmpty (NonEmpty (..))
+import Data.Time (getCurrentTime)
 import Control.Monad (forM_)
 import Text.EmailAddress (EmailAddress)
 import Database.Persist (Entity (..), insert, insert_, delete, get, getBy)
@@ -79,7 +80,7 @@ getEmail backend authToken =
     mRegAuth <- getBy $ UniqueAuthToken authToken
     case mRegAuth of
       Nothing -> pure Nothing
-      Just (Entity _ (RegisteredAuthToken _ owner)) -> do
+      Just (Entity _ (RegisteredAuthToken _ owner _)) -> do
         mEmailEnt <- getBy $ EmailAddressOwner owner
         case mEmailEnt of
           Nothing -> pure Nothing
@@ -112,6 +113,7 @@ login :: ConnectionPool
       -> IO (Either AuthTokenFailure AuthToken)
 login backend email password = do
   authToken <- genAuthToken
+  now <- getCurrentTime
   flip runSqlPool backend $ do
     mEmail <- getBy $ UniqueEmailAddress email
     case mEmail of
@@ -126,7 +128,7 @@ login backend email password = do
             pure (Left EmailDoesntExist)
           Just (User password')
             | password == password' -> do
-                insert_ $ RegisteredAuthToken authToken owner
+                insert_ $ RegisteredAuthToken authToken owner now
                 pure (Right authToken)
             | otherwise -> pure (Left BadPassword)
 
@@ -138,13 +140,14 @@ loginWithFB :: ConnectionPool
             -> IO (Maybe AuthToken)
 loginWithFB backend fbToken fbUserId = do
   authToken <- genAuthToken
+  now <- getCurrentTime
   flip runSqlPool backend $ do
     mDetails <- getBy $ UniqueFacebookUserId fbUserId
     case mDetails of
       Nothing -> pure Nothing
       Just (Entity fbUserIdId (FacebookUserDetails _ userId)) -> do
         insert_ $ FacebookUserAccessTokenStored fbToken fbUserIdId
-        insert_ $ RegisteredAuthToken authToken userId
+        insert_ $ RegisteredAuthToken authToken userId now
         pure (Just authToken)
 
 
@@ -156,7 +159,7 @@ usersAuthToken backend authToken =
     mRegistered <- getBy $ UniqueAuthToken authToken
     case mRegistered of
       Nothing -> pure Nothing
-      Just (Entity _ (RegisteredAuthToken _ userId)) -> pure (Just userId)
+      Just (Entity _ (RegisteredAuthToken _ userId _)) -> pure (Just userId)
 
 
 logout :: ConnectionPool
