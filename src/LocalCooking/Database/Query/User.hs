@@ -14,6 +14,7 @@ import LocalCooking.Database.Schema.User
   )
 import LocalCooking.Database.Schema.Auth
   ( RegisteredAuthToken (..)
+  , RegisteredAuthTokenId (..)
   , Unique (..)
   , EntityField (RegisteredAuthTokenAuthTokenIssued)
   )
@@ -24,8 +25,9 @@ import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 import Data.Aeson (ToJSON (..), Value (String))
 import Data.Time (DiffTime, getCurrentTime, addUTCTime)
 import Control.Monad (forM_)
+import Control.Monad.IO.Class (MonadIO (liftIO))
 import Text.EmailAddress (EmailAddress)
-import Database.Persist (Entity (..), insert, insert_, delete, get, getBy, selectList, (<.))
+import Database.Persist (Entity (..), insert, insert_, delete, get, getBy, replace, selectList, (<.))
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
 
@@ -159,7 +161,22 @@ usersAuthToken backend authToken =
     mRegistered <- getBy $ UniqueAuthToken authToken
     case mRegistered of
       Nothing -> pure Nothing
-      Just (Entity _ (RegisteredAuthToken _ userId _)) -> pure (Just userId)
+      Just (Entity token (RegisteredAuthToken _ userId _)) -> do
+        liftIO (touchAuthToken backend token)
+        pure (Just userId)
+
+
+touchAuthToken :: ConnectionPool
+               -> RegisteredAuthTokenId
+               -> IO ()
+touchAuthToken backend authTokenId = do
+  now <- getCurrentTime
+  flip runSqlPool backend $ do
+    mReg <- get authTokenId
+    case mReg of
+      Nothing -> pure ()
+      Just (RegisteredAuthToken x y _) ->
+        replace authTokenId (RegisteredAuthToken x y now)
 
 
 expireAuthTokensSince :: ConnectionPool
@@ -168,7 +185,7 @@ expireAuthTokensSince :: ConnectionPool
 expireAuthTokensSince backend diff = do
   now <- getCurrentTime
   flip runSqlPool backend $ do
-    as <- selectList [RegisteredAuthTokenAuthTokenIssued <. (addUTCTime (fromRational $ toRational $ negate diff) now)] []
+    as <- selectList [RegisteredAuthTokenAuthTokenIssued <. addUTCTime (fromRational $ toRational $ negate diff) now] []
     forM_ as $ \(Entity k _) -> delete k
 
 
