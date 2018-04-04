@@ -20,7 +20,7 @@ extra-source-files:
 description:         Please see the README on Github at <https://github.com/githubuser/localcooking-db#readme>
 
 ghc-options:
-  - -Wall
+  - -Werror
 
 dependencies:
 - base >= 4.8 && < 5
