@@ -12,22 +12,18 @@ import LocalCooking.Database.Schema.User
   ( User (..), EmailAddressStored (..), UserId, PendingRegistrationConfirm (..)
   , Unique (..)
   )
-import LocalCooking.Database.Schema.Auth
-  ( RegisteredAuthToken (..)
-  , RegisteredAuthTokenId (..)
-  , Unique (..)
-  , EntityField (RegisteredAuthTokenAuthTokenIssued)
-  )
+-- import LocalCooking.Database.Schema.Auth
+--   ( RegisteredAuthToken (..)
+--   , RegisteredAuthTokenId (..)
+--   , Unique (..)
+--   , EntityField (RegisteredAuthTokenAuthTokenIssued)
+--   )
 import LocalCooking.Common.Password (HashedPassword)
-import LocalCooking.Common.AuthToken (AuthToken, genAuthToken)
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
 import Data.Aeson (ToJSON (..), Value (String))
-import Data.Time (DiffTime, getCurrentTime, addUTCTime)
-import Control.Monad (forM_)
-import Control.Monad.IO.Class (MonadIO (liftIO))
 import Text.EmailAddress (EmailAddress)
-import Database.Persist (Entity (..), insert, insert_, delete, get, getBy, replace, selectList, (<.))
+import Database.Persist (Entity (..), insert, insert_, delete, get, getBy)
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
 
@@ -75,18 +71,14 @@ confirmEmail backend email =
 
 
 getEmail :: ConnectionPool
-         -> AuthToken
+         -> UserId
          -> IO (Maybe EmailAddress)
-getEmail backend authToken =
+getEmail backend owner =
   flip runSqlPool backend $ do
-    mRegAuth <- getBy $ UniqueAuthToken authToken
-    case mRegAuth of
+    mEmailEnt <- getBy $ EmailAddressOwner owner
+    case mEmailEnt of
       Nothing -> pure Nothing
-      Just (Entity _ (RegisteredAuthToken _ owner _)) -> do
-        mEmailEnt <- getBy $ EmailAddressOwner owner
-        case mEmailEnt of
-          Nothing -> pure Nothing
-          Just (Entity _ (EmailAddressStored email _)) -> pure (Just email)
+      Just (Entity _ (EmailAddressStored email _)) -> pure (Just email)
 
 
 registerFBUserId :: ConnectionPool
@@ -109,17 +101,16 @@ instance ToJSON AuthTokenFailure where
     EmailDoesntExist -> "no-email"
 
 
+-- | Doesn't write to database, read-only query
 login :: ConnectionPool
       -> EmailAddress
       -> HashedPassword
-      -> IO (Either AuthTokenFailure AuthToken)
-login backend email password = do
-  authToken <- genAuthToken
-  now <- getCurrentTime
+      -> IO (Maybe AuthTokenFailure)
+login backend email password =
   flip runSqlPool backend $ do
     mEmail <- getBy $ UniqueEmailAddress email
     case mEmail of
-      Nothing -> pure (Left EmailDoesntExist)
+      Nothing -> pure (Just EmailDoesntExist)
       Just (Entity email' (EmailAddressStored _ owner)) -> do
         -- no need to check for pending email here - only when filing orders, stuff like that
         mUser <- get owner
@@ -127,74 +118,69 @@ login backend email password = do
           Nothing -> do
             -- clean-up:
             delete email'
-            pure (Left EmailDoesntExist)
+            pure (Just EmailDoesntExist)
           Just (User password')
-            | password == password' -> do
-                insert_ $ RegisteredAuthToken authToken owner now
-                pure (Right authToken)
-            | otherwise -> pure (Left BadPassword)
+            | password == password' -> pure Nothing
+            | otherwise -> pure (Just BadPassword)
 
 
--- | NOTE: Doesn't verify the authenticity of FacebookUserAccessToken
+-- | NOTE: Doesn't verify the authenticity of FacebookUserAccessToken, but stores it
 loginWithFB :: ConnectionPool
             -> FacebookUserAccessToken
             -> FacebookUserId
-            -> IO (Maybe AuthToken)
-loginWithFB backend fbToken fbUserId = do
-  authToken <- genAuthToken
-  now <- getCurrentTime
+            -> IO Bool
+loginWithFB backend fbToken fbUserId =
   flip runSqlPool backend $ do
     mDetails <- getBy $ UniqueFacebookUserId fbUserId
     case mDetails of
-      Nothing -> pure Nothing
-      Just (Entity fbUserIdId (FacebookUserDetails _ userId)) -> do
+      Nothing -> pure False
+      Just (Entity fbUserIdId _) -> do
         insert_ $ FacebookUserAccessTokenStored fbToken fbUserIdId
-        insert_ $ RegisteredAuthToken authToken userId now
-        pure (Just authToken)
+        pure True
 
 
-usersAuthToken :: ConnectionPool
-               -> AuthToken
-               -> IO (Maybe UserId)
-usersAuthToken backend authToken =
-  flip runSqlPool backend $ do
-    mRegistered <- getBy $ UniqueAuthToken authToken
-    case mRegistered of
-      Nothing -> pure Nothing
-      Just (Entity token (RegisteredAuthToken _ userId _)) -> do
-        liftIO (touchAuthToken backend token)
-        pure (Just userId)
+-- usersAuthToken :: ConnectionPool
+--                -> AuthToken
+--                -> IO (Maybe UserId)
+-- usersAuthToken backend authToken =
+--   flip runSqlPool backend $ do
+--     mRegistered <- getBy $ UniqueAuthToken authToken
+--     case mRegistered of
+--       Nothing -> pure Nothing
+--       Just (Entity token (RegisteredAuthToken _ userId _)) -> do
+--         liftIO (touchAuthToken backend token)
+--         pure (Just userId)
 
 
-touchAuthToken :: ConnectionPool
-               -> RegisteredAuthTokenId
-               -> IO ()
-touchAuthToken backend authTokenId = do
-  now <- getCurrentTime
-  flip runSqlPool backend $ do
-    mReg <- get authTokenId
-    case mReg of
-      Nothing -> pure ()
-      Just (RegisteredAuthToken x y _) ->
-        replace authTokenId (RegisteredAuthToken x y now)
+-- touchAuthToken :: ConnectionPool
+--                -> RegisteredAuthTokenId
+--                -> IO ()
+-- touchAuthToken backend authTokenId = do
+--   now <- getCurrentTime
+--   flip runSqlPool backend $ do
+--     mReg <- get authTokenId
+--     case mReg of
+--       Nothing -> pure ()
+--       Just (RegisteredAuthToken x y _) ->
+--         replace authTokenId (RegisteredAuthToken x y now)
 
 
-expireAuthTokensSince :: ConnectionPool
-                      -> DiffTime -- ^ positive is age
-                      -> IO ()
-expireAuthTokensSince backend diff = do
-  now <- getCurrentTime
-  flip runSqlPool backend $ do
-    as <- selectList [RegisteredAuthTokenAuthTokenIssued <. addUTCTime (fromRational $ toRational $ negate diff) now] []
-    forM_ as $ \(Entity k _) -> delete k
+-- expireAuthTokensSince :: ConnectionPool
+--                       -> DiffTime -- ^ positive is age
+--                       -> IO ()
+-- expireAuthTokensSince backend diff = do
+--   now <- getCurrentTime
+--   flip runSqlPool backend $ do
+--     as <- selectList [RegisteredAuthTokenAuthTokenIssued <. addUTCTime (fromRational $ toRational $ negate diff) now] []
+--     forM_ as $ \(Entity k _) -> delete k
 
 
-logout :: ConnectionPool
-       -> AuthToken
-       -> IO ()
-logout backend authToken =
-  flip runSqlPool backend $ do
-    mRegistered <- getBy $ UniqueAuthToken authToken
-    case mRegistered of
-      Nothing -> pure ()
-      Just (Entity tokenId _) -> delete tokenId
+-- logout :: ConnectionPool
+--        -> AuthToken
+--        -> IO ()
+-- logout backend authToken =
+--   flip runSqlPool backend $ do
+--     mRegistered <- getBy $ UniqueAuthToken authToken
+--     case mRegistered of
+--       Nothing -> pure ()
+--       Just (Entity tokenId _) -> delete tokenId
