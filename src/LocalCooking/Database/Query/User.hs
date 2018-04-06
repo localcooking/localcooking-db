@@ -99,12 +99,12 @@ instance ToJSON AuthTokenFailure where
 login :: ConnectionPool
       -> EmailAddress
       -> HashedPassword
-      -> IO (Maybe AuthTokenFailure)
+      -> IO (Either AuthTokenFailure UserId)
 login backend email password =
   flip runSqlPool backend $ do
     mEmail <- getBy $ UniqueEmailAddress email
     case mEmail of
-      Nothing -> pure (Just EmailDoesntExist)
+      Nothing -> pure (Left EmailDoesntExist)
       Just (Entity email' (EmailAddressStored _ owner)) -> do
         -- no need to check for pending email here - only when filing orders, stuff like that
         mUser <- get owner
@@ -112,10 +112,10 @@ login backend email password =
           Nothing -> do
             -- clean-up:
             delete email'
-            pure (Just EmailDoesntExist)
+            pure (Left EmailDoesntExist)
           Just (User password')
-            | password == password' -> pure Nothing
-            | otherwise -> pure (Just BadPassword)
+            | password == password' -> pure (Right owner)
+            | otherwise -> pure (Left BadPassword)
 
 
 -- | NOTE: Doesn't verify the authenticity of FacebookUserAccessToken, but stores it
