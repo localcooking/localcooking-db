@@ -152,3 +152,15 @@ changeSecurityDetails backend userId (email,newPassword) password =
               Nothing -> insert_ (EmailAddressStored email userId)
               Just (Entity emailKey _) -> update emailKey [EmailAddressStoredEmailAddress =. email]
             pure True
+
+
+checkPassword :: ConnectionPool
+              -> UserId
+              -> HashedPassword
+              -> IO Bool
+checkPassword backend userId password =
+  flip runSqlPool backend $ do
+    mUser <- get userId
+    case mUser of
+      Nothing -> pure False
+      Just (User password') -> pure (password == password')
