@@ -11,13 +11,14 @@ import LocalCooking.Database.Schema.Facebook
 import LocalCooking.Database.Schema.User
   ( User (..), EmailAddressStored (..), UserId, PendingRegistrationConfirm (..)
   , Unique (..)
+  , EntityField (EmailAddressStoredEmailAddress)
   )
 import LocalCooking.Common.Password (HashedPassword)
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
 import Data.Aeson (ToJSON (..), Value (String))
 import Text.EmailAddress (EmailAddress)
-import Database.Persist (Entity (..), insert, insert_, delete, get, getBy)
+import Database.Persist (Entity (..), insert, insert_, delete, get, getBy, (=.), update)
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
 
@@ -131,3 +132,23 @@ loginWithFB backend fbToken fbUserId =
       Just (Entity fbUserIdId (FacebookUserDetails _ owner)) -> do
         insert_ $ FacebookUserAccessTokenStored fbToken fbUserIdId
         pure (Just owner)
+
+
+changeSecurityDetails :: ConnectionPool
+                      -> UserId
+                      -> (EmailAddress, HashedPassword)
+                      -> HashedPassword
+                      -> IO Bool
+changeSecurityDetails backend userId (email,newPassword) password =
+  flip runSqlPool backend $ do
+    mUser <- get userId
+    case mUser of
+      Nothing -> pure False
+      Just (User password')
+        | password' /= password -> pure False
+        | otherwise -> do
+            mEmail <- getBy $ EmailAddressOwner userId
+            case mEmail of
+              Nothing -> insert_ (EmailAddressStored email userId)
+              Just (Entity emailKey _) -> update emailKey [EmailAddressStoredEmailAddress =. email]
+            pure True
