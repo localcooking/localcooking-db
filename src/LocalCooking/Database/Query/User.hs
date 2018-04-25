@@ -76,6 +76,17 @@ getEmail backend owner =
       Just (Entity _ (EmailAddressStored email _)) -> pure (Just email)
 
 
+userIdByEmail :: ConnectionPool
+              -> EmailAddress
+              -> IO (Maybe UserId)
+userIdByEmail backend email =
+  flip runSqlPool backend $ do
+    mEmailEnt <- getBy $ UniqueEmailAddress email
+    case mEmailEnt of
+      Nothing -> pure Nothing
+      Just (Entity _ (EmailAddressStored _ userId)) -> pure (Just userId)
+
+
 registerFBUserId :: ConnectionPool
                  -> UserId
                  -> FacebookUserId
