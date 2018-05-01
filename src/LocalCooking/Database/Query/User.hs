@@ -208,13 +208,13 @@ delRole backend userId userRole =
 hasRole :: ConnectionPool
         -> UserId
         -> UserRole
-        -> IO ()
+        -> IO Bool
 hasRole backend userId userRole =
   flip runSqlPool backend $ do
     mUserRoleEnt <- getBy (UniqueUserRole userRole userId)
     case mUserRoleEnt of
-      Nothing -> pure ()
-      Just (Entity userRoleKey _) -> delete userRoleKey
+      Nothing -> pure False
+      Just _  -> pure True
 
 
 getRoles :: ConnectionPool
