@@ -11,14 +11,16 @@ import LocalCooking.Database.Schema.Facebook
 import LocalCooking.Database.Schema.User
   ( User (..), EmailAddressStored (..), UserId, PendingRegistrationConfirm (..)
   , Unique (..)
-  , EntityField (EmailAddressStoredEmailAddress)
+  , EntityField (EmailAddressStoredEmailAddress, UserRoleStoredUserRole, UserRoleStoredUserRoleOwner, UserPassword)
+  , UserRoleStored (..)
   )
 import LocalCooking.Common.Password (HashedPassword)
+import LocalCooking.Common.User.Role (UserRole)
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
 import Data.Aeson (ToJSON (..), Value (String))
 import Text.EmailAddress (EmailAddress)
-import Database.Persist (Entity (..), insert, insert_, delete, get, getBy, (=.), update)
+import Database.Persist (Entity (..), insert, insert_, delete, get, getBy, (=.), update, (==.), selectList)
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
 
@@ -162,6 +164,7 @@ changeSecurityDetails backend userId (email,newPassword) password =
             case mEmail of
               Nothing -> insert_ (EmailAddressStored email userId)
               Just (Entity emailKey _) -> update emailKey [EmailAddressStoredEmailAddress =. email]
+            update userId [UserPassword =. newPassword]
             pure True
 
 
@@ -175,3 +178,49 @@ checkPassword backend userId password =
     case mUser of
       Nothing -> pure False
       Just (User password') -> pure (password == password')
+
+
+
+addRole :: ConnectionPool
+        -> UserId
+        -> UserRole
+        -> IO ()
+addRole backend userId userRole =
+  flip runSqlPool backend $ do
+    mUserRoleEnt <- getBy (UniqueUserRole userRole userId)
+    case mUserRoleEnt of
+      Just _ -> pure ()
+      Nothing -> insert_ (UserRoleStored userRole userId)
+
+
+delRole :: ConnectionPool
+        -> UserId
+        -> UserRole
+        -> IO ()
+delRole backend userId userRole =
+  flip runSqlPool backend $ do
+    mUserRoleEnt <- getBy (UniqueUserRole userRole userId)
+    case mUserRoleEnt of
+      Nothing -> pure ()
+      Just (Entity userRoleKey _) -> delete userRoleKey
+
+
+hasRole :: ConnectionPool
+        -> UserId
+        -> UserRole
+        -> IO ()
+hasRole backend userId userRole =
+  flip runSqlPool backend $ do
+    mUserRoleEnt <- getBy (UniqueUserRole userRole userId)
+    case mUserRoleEnt of
+      Nothing -> pure ()
+      Just (Entity userRoleKey _) -> delete userRoleKey
+
+
+getRoles :: ConnectionPool
+         -> UserId
+         -> IO [UserRole]
+getRoles backend userId =
+  flip runSqlPool backend $ do
+    userRoleEnts <- selectList [UserRoleStoredUserRoleOwner ==. userId] []
+    pure ((\(Entity _ (UserRoleStored x _)) -> x) <$> userRoleEnts)
