@@ -1,5 +1,6 @@
 {-# LANGUAGE
     OverloadedStrings
+  , DeriveGeneric
   #-}
 
 module LocalCooking.Database.Query.User where
@@ -22,16 +23,22 @@ import Data.Aeson (ToJSON (..), Value (String))
 import Text.EmailAddress (EmailAddress)
 import Database.Persist (Entity (..), insert, insert_, delete, get, getBy, (=.), update, (==.), selectList)
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
+import GHC.Generics (Generic)
+import Test.QuickCheck (Arbitrary (..), oneof)
 
 
 
 data RegisterFailure
   = EmailExists
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 instance ToJSON RegisterFailure where
   toJSON x = String $ case x of
     EmailExists -> "email-exists"
+
+instance Arbitrary RegisterFailure where
+  arbitrary = pure EmailExists
+
 
 
 registerUser :: ConnectionPool
@@ -101,12 +108,18 @@ registerFBUserId backend userId fbUserId =
 data LoginFailure
   = BadPassword
   | EmailDoesntExist
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 instance ToJSON LoginFailure where
   toJSON x = String $ case x of
     BadPassword -> "bad-password"
     EmailDoesntExist -> "no-email"
+
+instance Arbitrary LoginFailure where
+  arbitrary = oneof
+    [ pure BadPassword
+    , pure EmailDoesntExist
+    ]
 
 
 -- | Doesn't write to database, read-only query
