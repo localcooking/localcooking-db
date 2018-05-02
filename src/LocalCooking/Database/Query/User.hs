@@ -19,7 +19,8 @@ import LocalCooking.Common.Password (HashedPassword)
 import LocalCooking.Common.User.Role (UserRole)
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
-import Data.Aeson (ToJSON (..), Value (String))
+import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
+import Data.Aeson.Types (typeMismatch)
 import Text.EmailAddress (EmailAddress)
 import Database.Persist (Entity (..), insert, insert_, delete, get, getBy, (=.), update, (==.), selectList)
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
@@ -35,6 +36,15 @@ data RegisterFailure
 instance ToJSON RegisterFailure where
   toJSON x = String $ case x of
     EmailExists -> "email-exists"
+
+instance FromJSON RegisterFailure where
+  parseJSON json = case json of
+    String x
+      | x == "email-exists" -> pure EmailExists
+      | otherwise -> fail
+    _ -> fail
+    where
+      fail = typeMismatch "RegisterFailure" json
 
 instance Arbitrary RegisterFailure where
   arbitrary = pure EmailExists
@@ -114,6 +124,16 @@ instance ToJSON LoginFailure where
   toJSON x = String $ case x of
     BadPassword -> "bad-password"
     EmailDoesntExist -> "no-email"
+
+instance FromJSON LoginFailure where
+  parseJSON json = case json of
+    String x
+      | x == "bad-password" -> pure BadPassword
+      | x == "no-email" -> pure EmailDoesntExist
+      | otherwise -> fail
+    _ -> fail
+    where
+      fail = typeMismatch "LoginFailure" json
 
 instance Arbitrary LoginFailure where
   arbitrary = oneof
