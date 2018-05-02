@@ -98,12 +98,12 @@ registerFBUserId backend userId fbUserId =
     insert_ $ FacebookUserDetails fbUserId userId
 
 
-data AuthTokenFailure
+data LoginFailure
   = BadPassword
   | EmailDoesntExist
   deriving (Eq, Show)
 
-instance ToJSON AuthTokenFailure where
+instance ToJSON LoginFailure where
   toJSON x = String $ case x of
     BadPassword -> "bad-password"
     EmailDoesntExist -> "no-email"
@@ -113,7 +113,7 @@ instance ToJSON AuthTokenFailure where
 login :: ConnectionPool
       -> EmailAddress
       -> HashedPassword
-      -> IO (Either AuthTokenFailure UserId)
+      -> IO (Either LoginFailure UserId)
 login backend email password =
   flip runSqlPool backend $ do
     mEmail <- getBy $ UniqueEmailAddress email
