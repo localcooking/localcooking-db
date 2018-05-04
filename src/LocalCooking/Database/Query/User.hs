@@ -257,3 +257,22 @@ getRoles backend userId =
   flip runSqlPool backend $ do
     userRoleEnts <- selectList [UserRoleStoredUserRoleOwner ==. userId] []
     pure ((\(Entity _ (UserRoleStored x _)) -> x) <$> userRoleEnts)
+
+
+addPendingEmail :: ConnectionPool
+                -> UserId
+                -> IO ()
+addPendingEmail backend userId =
+  flip runSqlPool backend $
+    insert_ (PendingRegistrationConfirm userId)
+
+
+removePendingEmail :: ConnectionPool
+                   -> UserId
+                   -> IO ()
+removePendingEmail backend userId =
+  flip runSqlPool backend $ do
+    mEnt <- getBy (UniquePendingRegistration userId)
+    case mEnt of
+      Nothing -> pure ()
+      Just (Entity key _) -> delete key
