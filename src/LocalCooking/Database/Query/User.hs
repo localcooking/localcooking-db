@@ -1,5 +1,6 @@
 {-# LANGUAGE
     OverloadedStrings
+  , TupleSections
   , DeriveGeneric
   #-}
 
@@ -21,6 +22,9 @@ import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
 import Data.Aeson.Types (typeMismatch)
+import Data.Maybe (catMaybes)
+import Control.Monad (forM)
+import Control.Monad.IO.Class (liftIO)
 import Text.EmailAddress (EmailAddress)
 import Database.Persist (Entity (..), insert, insert_, delete, get, getBy, (=.), update, (==.), selectList)
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
@@ -211,6 +215,16 @@ checkPassword backend userId password =
     case mUser of
       Nothing -> pure False
       Just (User password') -> pure (password == password')
+
+getUsers :: ConnectionPool
+         -> IO [(EmailAddress, [UserRole])]
+getUsers backend =
+  flip runSqlPool backend $ do
+    userIds <- selectList [] []
+    fmap catMaybes $ forM userIds $ \(Entity userId _) -> do
+      mEmail <- liftIO (getEmail backend userId)
+      roles <- liftIO (getRoles backend userId)
+      pure $ (,roles) <$> mEmail
 
 
 
