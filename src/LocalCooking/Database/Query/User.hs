@@ -216,6 +216,7 @@ checkPassword backend userId password =
       Nothing -> pure False
       Just (User password') -> pure (password == password')
 
+
 getUsers :: ConnectionPool
          -> IO [(EmailAddress, [UserRole])]
 getUsers backend =
