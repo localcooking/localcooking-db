@@ -13,7 +13,7 @@ import LocalCooking.Database.Schema.Facebook
 import LocalCooking.Database.Schema.User
   ( User (..), EmailAddressStored (..), UserId, PendingRegistrationConfirm (..)
   , Unique (..)
-  , EntityField (EmailAddressStoredEmailAddress, UserRoleStoredUserRole, UserRoleStoredUserRoleOwner, UserPassword)
+  , EntityField (EmailAddressStoredEmailAddress, UserRoleStoredUserRoleOwner, UserPassword)
   , UserRoleStored (..)
   )
 import LocalCooking.Common.Password (HashedPassword)
@@ -45,10 +45,10 @@ instance FromJSON RegisterFailure where
   parseJSON json = case json of
     String x
       | x == "email-exists" -> pure EmailExists
-      | otherwise -> fail
-    _ -> fail
+      | otherwise -> fail'
+    _ -> fail'
     where
-      fail = typeMismatch "RegisterFailure" json
+      fail' = typeMismatch "RegisterFailure" json
 
 instance Arbitrary RegisterFailure where
   arbitrary = pure EmailExists
@@ -134,10 +134,10 @@ instance FromJSON LoginFailure where
     String x
       | x == "bad-password" -> pure BadPassword
       | x == "no-email" -> pure EmailDoesntExist
-      | otherwise -> fail
-    _ -> fail
+      | otherwise -> fail'
+    _ -> fail'
     where
-      fail = typeMismatch "LoginFailure" json
+      fail' = typeMismatch "LoginFailure" json
 
 instance Arbitrary LoginFailure where
   arbitrary = oneof

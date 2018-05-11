@@ -1,32 +1,7 @@
-{-# LANGUAGE
-    GADTs
-  , QuasiQuotes
-  , TypeFamilies
-  , TemplateHaskell
-  , MultiParamTypeClasses
-  , GeneralizedNewtypeDeriving
-  #-}
+module LocalCooking.Database.Schema.Facebook
+  ( module LocalCooking.Database.Schema.Facebook.AccessToken
+  , module LocalCooking.Database.Schema.Facebook.UserDetails
+  ) where
 
-module LocalCooking.Database.Schema.Facebook where
-
-import LocalCooking.Database.Schema.User (UserId)
-import Facebook.Types (FacebookUserAccessToken, FacebookUserId)
-
-import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)
-
-
-share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-FacebookUserAccessTokenStored
-    facebookUserAccessToken FacebookUserAccessToken
-    facebookUserDetails FacebookUserDetailsId
-    UniqueFacebookUserAccessToken facebookUserAccessToken
-    FacebookUserAccessTokenOwner facebookUserDetails
-    deriving Eq Show
-
-FacebookUserDetails
-    facebookUserId FacebookUserId
-    facebookUserOwner UserId
-    UniqueFacebookUserId facebookUserId
-    FacebookUserDetailsOwner facebookUserOwner
-    deriving Eq Show
-|]
+import LocalCooking.Database.Schema.Facebook.AccessToken hiding (migrateAll)
+import LocalCooking.Database.Schema.Facebook.UserDetails hiding (migrateAll)
