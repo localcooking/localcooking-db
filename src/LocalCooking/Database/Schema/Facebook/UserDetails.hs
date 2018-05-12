@@ -14,6 +14,7 @@ module LocalCooking.Database.Schema.Facebook.UserDetails where
 import LocalCooking.Database.Schema.User (UserId)
 import Facebook.Types (FacebookUserId)
 
+import Data.Hashable (Hashable (..))
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
 import Data.Aeson.Types (typeMismatch)
 import Database.Persist.Class (PersistEntity (EntityField, Key))
@@ -28,6 +29,9 @@ FacebookUserDetails
     FacebookUserDetailsOwner facebookUserOwner
     deriving Eq Show
 |]
+
+instance Hashable (Key FacebookUserDetails) where
+  hashWithSalt salt x = hashWithSalt salt (toJSON x)
 
 instance Eq (EntityField FacebookUserDetails typ) where
   x == y = case x of

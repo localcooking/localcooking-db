@@ -13,6 +13,7 @@ module LocalCooking.Database.Schema.User.Pending where
 
 import LocalCooking.Database.Schema.User.Password (UserId)
 
+import Data.Hashable (Hashable (..))
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
 import Data.Aeson.Types (typeMismatch)
 import Database.Persist.Class (PersistEntity (EntityField, Key))
@@ -25,6 +26,9 @@ PendingRegistrationConfirm
     UniquePendingRegistration pendingRegister
     deriving Eq Show
 |]
+
+instance Hashable (Key PendingRegistrationConfirm) where
+  hashWithSalt salt x = hashWithSalt salt (toJSON x)
 
 instance Eq (EntityField PendingRegistrationConfirm typ) where
   x == y = case x of

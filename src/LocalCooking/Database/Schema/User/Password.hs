@@ -5,8 +5,8 @@
   , TemplateHaskell
   , FlexibleInstances
   , OverloadedStrings
-  , MultiParamTypeClasses
   , StandaloneDeriving
+  , MultiParamTypeClasses
   , GeneralizedNewtypeDeriving
   #-}
 
@@ -14,9 +14,11 @@ module LocalCooking.Database.Schema.User.Password where
 
 import LocalCooking.Common.Password (HashedPassword)
 
+import Data.Hashable (Hashable (..))
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
 import Data.Aeson.Types (typeMismatch)
-import Database.Persist.Class (PersistEntity (EntityField, Key))
+import Database.Persist.Sql (SqlBackend)
+import Database.Persist.Class (PersistEntity (EntityField, Key), PersistCore (BackendKey))
 import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)
 
 
@@ -25,6 +27,9 @@ User
     password HashedPassword
     deriving Eq Show
 |]
+
+instance Hashable (Key User) where
+  hashWithSalt salt x = hashWithSalt salt (toJSON x)
 
 instance Eq (EntityField User typ) where
   x == y = case x of

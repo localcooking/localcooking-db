@@ -14,6 +14,7 @@ module LocalCooking.Database.Schema.User.Role where
 import LocalCooking.Database.Schema.User.Password (UserId)
 import LocalCooking.Common.User.Role (UserRole)
 
+import Data.Hashable (Hashable (..))
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
 import Data.Aeson.Types (typeMismatch)
 import Database.Persist.Class (PersistEntity (EntityField, Key))
@@ -27,6 +28,9 @@ UserRoleStored
     UniqueUserRole userRole userRoleOwner
     deriving Eq Show
 |]
+
+instance Hashable (Key UserRoleStored) where
+  hashWithSalt salt x = hashWithSalt salt (toJSON x)
 
 instance Eq (EntityField UserRoleStored typ) where
   x == y = case x of

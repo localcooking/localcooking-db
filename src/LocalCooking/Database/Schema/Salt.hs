@@ -13,6 +13,7 @@ module LocalCooking.Database.Schema.Salt where
 
 import LocalCooking.Common.Password (HashedPassword)
 
+import Data.Hashable (Hashable (..))
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
 import Data.Aeson.Types (typeMismatch)
 import Database.Persist.Class (PersistEntity (EntityField, Key))
@@ -25,6 +26,9 @@ PasswordSalt
     UniquePasswordSalt passwordSalt
     deriving Eq Show
 |]
+
+instance Hashable (Key PasswordSalt) where
+  hashWithSalt salt x = hashWithSalt salt (toJSON x)
 
 instance Eq (EntityField PasswordSalt typ) where
   x == y = case x of
