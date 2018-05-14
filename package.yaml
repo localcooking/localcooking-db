@@ -28,6 +28,7 @@ dependencies:
 - localcooking-shared
 - aeson
 - bytestring
+- containers
 - emailaddress
 - hashable
 - monad-logger

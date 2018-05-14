@@ -17,13 +17,14 @@ import LocalCooking.Database.Schema.User
   , UserRoleStored (..)
   )
 import LocalCooking.Common.Password (HashedPassword)
-import LocalCooking.Common.User.Role (UserRole)
+import LocalCooking.Common.User.Role (UserRole (Customer, Admin))
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
 import Data.Aeson.Types (typeMismatch)
 import Data.Maybe (catMaybes)
-import Control.Monad (forM)
+import qualified Data.Set as Set
+import Control.Monad (forM, forM_)
 import Control.Monad.IO.Class (liftIO)
 import Text.EmailAddress (EmailAddress)
 import Database.Persist (Entity (..), insert, insert_, delete, get, getBy, (=.), update, (==.), selectList)
@@ -227,6 +228,35 @@ getUsers backend =
       roles <- liftIO (getRoles backend userId)
       pure $ (,roles) <$> mEmail
 
+deleteUser :: ConnectionPool
+           -> EmailAddress
+           -> IO ()
+deleteUser backend e =
+  flip runSqlPool backend $ do
+    mUid <- liftIO (userIdByEmail backend e)
+    case mUid of
+      Nothing -> pure ()
+      Just uid -> delete uid
+
+updateUser :: ConnectionPool
+           -> EmailAddress
+           -> [UserRole]
+           -> Maybe HashedPassword
+           -> IO ()
+updateUser backend e roles pw =
+  flip runSqlPool backend $ do
+    mUid <- liftIO (userIdByEmail backend e)
+    case mUid of
+      Nothing -> pure ()
+      Just uid -> do
+        let allRoles = Set.fromList [Customer .. Admin]
+            removedRoles = Set.difference (Set.fromList roles) allRoles
+        liftIO $ do
+          forM_ removedRoles (delRole backend uid)
+          forM_ roles (addRole backend uid)
+        case pw of
+          Nothing -> pure ()
+          Just pw' -> update uid [UserPassword =. pw']
 
 
 addRole :: ConnectionPool
