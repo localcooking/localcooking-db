@@ -250,7 +250,7 @@ updateUser backend e roles pw =
       Nothing -> pure ()
       Just uid -> do
         let allRoles = Set.fromList [Customer .. Admin]
-            removedRoles = Set.difference (Set.fromList roles) allRoles
+            removedRoles = allRoles `Set.difference` (Set.fromList roles)
         liftIO $ do
           forM_ removedRoles (delRole backend uid)
           forM_ roles (addRole backend uid)
