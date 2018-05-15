@@ -27,7 +27,7 @@ import qualified Data.Set as Set
 import Control.Monad (forM, forM_)
 import Control.Monad.IO.Class (liftIO)
 import Text.EmailAddress (EmailAddress)
-import Database.Persist (Entity (..), insert, insert_, delete, get, getBy, (=.), update, (==.), selectList)
+import Database.Persist (Entity (..), insert, insert_, delete, deleteBy, get, getBy, (=.), update, (==.), selectList)
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import GHC.Generics (Generic)
 import Test.QuickCheck (Arbitrary (..), oneof)
@@ -236,7 +236,12 @@ deleteUser backend e =
     mUid <- liftIO (userIdByEmail backend e)
     case mUid of
       Nothing -> pure ()
-      Just uid -> delete uid
+      Just uid -> do
+        delete uid
+        deleteBy (EmailAddressOwner uid)
+        deleteBy (UniquePendingRegistration uid)
+        rs <- selectList [UserRoleStoredUserRoleOwner ==. uid] []
+        forM_ rs $ \(Entity key _) -> delete key
 
 updateUser :: ConnectionPool
            -> EmailAddress
