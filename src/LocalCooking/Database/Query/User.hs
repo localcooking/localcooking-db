@@ -94,7 +94,7 @@ getEmail :: ConnectionPool
          -> IO (Maybe EmailAddress)
 getEmail backend owner =
   flip runSqlPool backend $ do
-    mEmailEnt <- getBy $ EmailAddressOwner owner
+    mEmailEnt <- getBy (EmailAddressOwner owner)
     case mEmailEnt of
       Nothing -> pure Nothing
       Just (Entity _ (EmailAddressStored email _)) -> pure (Just email)
@@ -105,7 +105,7 @@ userIdByEmail :: ConnectionPool
               -> IO (Maybe UserId)
 userIdByEmail backend email =
   flip runSqlPool backend $ do
-    mEmailEnt <- getBy $ UniqueEmailAddress email
+    mEmailEnt <- getBy (UniqueEmailAddress email)
     case mEmailEnt of
       Nothing -> pure Nothing
       Just (Entity _ (EmailAddressStored _ userId)) -> pure (Just userId)
