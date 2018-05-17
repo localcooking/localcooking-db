@@ -17,6 +17,7 @@ import LocalCooking.Common.Password (HashedPassword)
 import Data.Hashable (Hashable (..))
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
 import Data.Aeson.Types (typeMismatch)
+import Data.Time (UTCTime)
 import Database.Persist.Sql (SqlBackend)
 import Database.Persist.Class (PersistEntity (EntityField, Key), PersistCore (BackendKey))
 import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)
@@ -24,6 +25,7 @@ import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkM
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 User
+    created UTCTime
     password HashedPassword
     deriving Eq Show
 |]

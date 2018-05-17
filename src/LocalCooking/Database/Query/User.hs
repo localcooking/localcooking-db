@@ -24,6 +24,7 @@ import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
 import Data.Aeson.Types (typeMismatch)
 import Data.Maybe (catMaybes)
 import qualified Data.Set as Set
+import Data.Time (getCurrentTime)
 import Control.Monad (forM, forM_)
 import Control.Monad.IO.Class (liftIO)
 import Text.EmailAddress (EmailAddress)
@@ -60,15 +61,16 @@ registerUser :: ConnectionPool
              -> EmailAddress
              -> HashedPassword
              -> IO (Either RegisterFailure UserId)
-registerUser backend email password =
+registerUser backend email password = do
+  now <- getCurrentTime
   flip runSqlPool backend $ do
-    mEnt <- getBy $ UniqueEmailAddress email
+    mEnt <- getBy (UniqueEmailAddress email)
     case mEnt of
       Just _ -> pure (Left EmailExists)
       Nothing -> do
-        userId <- insert $ User password
-        insert_ $ EmailAddressStored email userId
-        insert_ $ PendingRegistrationConfirm userId
+        userId <- insert (User now password)
+        insert_ (EmailAddressStored email userId)
+        insert_ (PendingRegistrationConfirm userId)
         pure (Right userId)
 
 
@@ -77,11 +79,11 @@ confirmEmail :: ConnectionPool
              -> IO Bool
 confirmEmail backend email =
   flip runSqlPool backend $ do
-    mUserEnt <- getBy $ UniqueEmailAddress email
+    mUserEnt <- getBy (UniqueEmailAddress email)
     case mUserEnt of
       Nothing -> pure False
       Just (Entity _ (EmailAddressStored _ owner)) -> do
-        mPendingEnt <- getBy $ UniquePendingRegistration owner
+        mPendingEnt <- getBy (UniquePendingRegistration owner)
         case mPendingEnt of
           Nothing -> pure False
           Just (Entity pendingKey _) -> do
@@ -154,7 +156,7 @@ login :: ConnectionPool
       -> IO (Either LoginFailure UserId)
 login backend email password =
   flip runSqlPool backend $ do
-    mEmail <- getBy $ UniqueEmailAddress email
+    mEmail <- getBy (UniqueEmailAddress email)
     case mEmail of
       Nothing -> pure (Left EmailDoesntExist)
       Just (Entity email' (EmailAddressStored _ owner)) -> do
@@ -165,7 +167,7 @@ login backend email password =
             -- clean-up:
             delete email'
             pure (Left EmailDoesntExist)
-          Just (User password')
+          Just (User _ password')
             | password == password' -> pure (Right owner)
             | otherwise -> pure (Left BadPassword)
 
@@ -195,10 +197,10 @@ changeSecurityDetails backend userId (email,newPassword) password =
     mUser <- get userId
     case mUser of
       Nothing -> pure False
-      Just (User password')
+      Just (User _ password')
         | password' /= password -> pure False
         | otherwise -> do
-            mEmail <- getBy $ EmailAddressOwner userId
+            mEmail <- getBy (EmailAddressOwner userId)
             case mEmail of
               Nothing -> insert_ (EmailAddressStored email userId)
               Just (Entity emailKey _) -> update emailKey [EmailAddressStoredEmailAddress =. email]
@@ -215,7 +217,7 @@ checkPassword backend userId password =
     mUser <- get userId
     case mUser of
       Nothing -> pure False
-      Just (User password') -> pure (password == password')
+      Just (User _ password') -> pure (password == password')
 
 
 getUsers :: ConnectionPool
