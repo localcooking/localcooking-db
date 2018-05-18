@@ -7,10 +7,10 @@
 
 module LocalCooking.Database.Query.Meal where
 
-import LocalCooking.Database.Query.Ingredient (getIngredientId)
-import LocalCooking.Database.Query.Tag.Meal (getMealTagId)
+import LocalCooking.Database.Query.Ingredient (getIngredientId, getIngredientById)
+import LocalCooking.Database.Query.Tag.Meal (getMealTagId, getMealTagById)
 import LocalCooking.Database.Schema.Menu (StoredMenuId)
-import LocalCooking.Database.Schema.Meal (StoredMeal (..), MealsIngredient (..), MealsTag (..))
+import LocalCooking.Database.Schema.Meal (StoredMeal (..), MealsIngredient (..), MealsTag (..), EntityField (..))
 import LocalCooking.Common.Meal (Meal (..))
 
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
@@ -44,3 +44,25 @@ insertMeal backend menuId Meal{..} =
       case mTagId of
         Nothing -> pure ()
         Just tagId -> insert_ (MealsTag mealId tagId)
+
+
+getMeals :: ConnectionPool
+         -> StoredMenuId
+         -> IO [Meal]
+getMeals backend menuId =
+  flip runSqlPool backend $ do
+    xs <- selectList [StoredMealStoredMealMenu ==. menuId] []
+    forM xs $ \(Entity k (StoredMeal title _ synopsis desc inst images)) -> do
+      ings <- selectList [MealsIngredientMealsIngredientMeal ==. k] []
+      ingredients <- forM ings (\(Entity _ (MealsIngredient _ i)) -> liftIO (getIngredientById backend i))
+      ts <- selectList [MealsTagMealsTagMeal ==. k] []
+      tags <- forM ts (\(Entity _ (MealsTag _ i)) -> liftIO (getMealTagById backend i))
+      pure Meal
+        { mealTitle = title
+        , mealSynopsis = synopsis
+        , mealDescription = desc
+        , mealInstructions = inst
+        , mealImages = images
+        , mealIngredients = catMaybes ingredients
+        , mealTags = catMaybes tags
+        }

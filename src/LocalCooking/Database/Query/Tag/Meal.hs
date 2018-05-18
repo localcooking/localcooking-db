@@ -4,7 +4,7 @@ import LocalCooking.Database.Schema.Tag.Meal
   ( StoredMealTag (..), Unique (..), StoredMealTagId )
 import LocalCooking.Common.Tag.Meal (MealTag)
 
-import Database.Persist (Entity (..), getBy, delete, insert_, selectList)
+import Database.Persist (Entity (..), get, getBy, delete, insert_, selectList)
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
 
@@ -34,6 +34,13 @@ getMealTagId backend tag =
   flip runSqlPool backend $ do
     mEnt <- getBy (UniqueMealTag tag)
     pure ((\(Entity k _) -> k) <$> mEnt)
+
+
+getMealTagById :: ConnectionPool
+               -> StoredMealTagId
+               -> IO (Maybe MealTag)
+getMealTagById backend tagId =
+  fmap (\(StoredMealTag t) -> t) <$> runSqlPool (get tagId) backend
 
 
 getMealTags :: ConnectionPool
