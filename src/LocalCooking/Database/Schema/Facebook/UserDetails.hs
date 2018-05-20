@@ -11,7 +11,7 @@
 
 module LocalCooking.Database.Schema.Facebook.UserDetails where
 
-import LocalCooking.Database.Schema.User (UserId)
+import LocalCooking.Database.Schema.User.Password (UserId)
 import Facebook.Types (FacebookUserId)
 
 import Data.Hashable (Hashable (..))
@@ -21,6 +21,10 @@ import Database.Persist.Class (PersistEntity (EntityField, Key))
 import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)
 
 
+-- Globally, there will only be one facebook user id, and one user id. A member
+-- of this record witnesses also that the relation this record represents
+-- is distinguishedly unique by each field independently - no two entities would
+-- ever share similar constituent fields.
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 FacebookUserDetails
     facebookUserId FacebookUserId

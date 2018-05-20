@@ -11,9 +11,10 @@ import Database.Persist.Sql (ConnectionPool, runSqlPool)
 insertIngredient :: ConnectionPool
                  -> Ingredient
                  -> IO ()
-insertIngredient backend tag =
-  flip runSqlPool backend $
-    insert_ (StoredIngredient tag)
+insertIngredient backend (Ingredient name voids) =
+  flip runSqlPool backend $ do
+    insert_ (StoredIngredient name)
+    forM_ voids $ \d ->
 
 
 deleteIngredient :: ConnectionPool

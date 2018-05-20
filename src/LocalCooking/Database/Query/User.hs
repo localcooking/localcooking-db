@@ -10,13 +10,21 @@ import LocalCooking.Database.Schema.Facebook
   ( FacebookUserDetails (..), FacebookUserAccessTokenStored (..)
   , Unique (..)
   )
-import LocalCooking.Database.Schema.User
-  ( User (..), EmailAddressStored (..), UserId, PendingRegistrationConfirm (..)
+import LocalCooking.Database.Schema.User.Email
+  ( EmailAddressStored (..)
   , Unique (..)
-  , EntityField (EmailAddressStoredEmailAddress, UserRoleStoredUserRoleOwner, UserPassword)
-  , UserRoleStored (..)
+  , EntityField (EmailAddressStoredEmailAddress)
   )
-import LocalCooking.Common.Password (HashedPassword)
+import LocalCooking.Database.Schema.User.Password
+  ( User (..), EntityField (UserPassword), UserId
+  )
+import LocalCooking.Database.Schema.User.Pending
+  ( PendingRegistrationConfirm (..)
+  )
+import LocalCooking.Database.Schema.User.Role
+  ( EntityField (UserRoleStoredUserRoleOwner), UserRoleStored (..)
+  )
+import LocalCooking.Common.User.Password (HashedPassword)
 import LocalCooking.Common.User.Role (UserRole (Customer, Admin))
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
@@ -179,11 +187,11 @@ loginWithFB :: ConnectionPool
             -> IO (Maybe UserId)
 loginWithFB backend fbToken fbUserId =
   flip runSqlPool backend $ do
-    mDetails <- getBy $ UniqueFacebookUserId fbUserId
+    mDetails <- getBy (UniqueFacebookUserId fbUserId)
     case mDetails of
       Nothing -> pure Nothing
       Just (Entity fbUserIdId (FacebookUserDetails _ owner)) -> do
-        insert_ $ FacebookUserAccessTokenStored fbToken fbUserIdId
+        insert_ (FacebookUserAccessTokenStored fbToken fbUserIdId)
         pure (Just owner)
 
 

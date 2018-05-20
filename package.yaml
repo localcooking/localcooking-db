@@ -29,7 +29,7 @@ dependencies:
 - aeson
 - bytestring
 - containers
-- emailaddress
+- emailaddress >= 0.2.0.1
 - hashable
 - monad-logger
 - persistent
