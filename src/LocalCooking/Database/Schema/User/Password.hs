@@ -26,6 +26,7 @@ import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkM
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 User
     created UTCTime
+    email EmailAddress
     password HashedPassword
     deriving Eq Show
 |]
@@ -37,18 +38,30 @@ instance Eq (EntityField User typ) where
   x == y = case x of
     UserPassword -> case y of
       UserPassword -> True
+    UserEmail -> case y of
+      UserEmail -> True
     UserId -> case y of
       UserId -> True
 
 instance ToJSON (EntityField User typ) where
   toJSON x = case x of
     UserPassword -> String "password"
+    UserEmail -> String "email"
     UserId -> String "userId"
 
 instance FromJSON (EntityField User HashedPassword) where
   parseJSON json = case json of
     String s
       | s == "password" -> pure UserPassword
+      | otherwise -> fail'
+    _ -> fail'
+    where
+      fail' = typeMismatch "EntityField User" json
+
+instance FromJSON (EntityField User EmailAddress) where
+  parseJSON json = case json of
+    String s
+      | s == "email" -> pure UserEmail
       | otherwise -> fail'
     _ -> fail'
     where
