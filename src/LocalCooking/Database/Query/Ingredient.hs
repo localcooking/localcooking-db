@@ -1,5 +1,6 @@
 module LocalCooking.Database.Query.Ingredient where
 
+import LocalCooking.Database.Query.Diet (getDietId)
 import LocalCooking.Database.Schema.Ingredient
   ( StoredIngredient (..), Unique (..), StoredIngredientId )
 import LocalCooking.Common.Ingredient (Ingredient)
@@ -13,41 +14,60 @@ insertIngredient :: ConnectionPool
                  -> IO ()
 insertIngredient backend (Ingredient name voids) =
   flip runSqlPool backend $ do
-    insert_ (StoredIngredient name)
-    forM_ voids $ \d ->
+    ingId <- insert (StoredIngredient name)
+    ids <- forM_ voids $ \d -> liftIO (catMaybes <$> getDietId backend d)
+    forM_ ids $ \i -> insert_ (IngredientDietViolation ingId i)
+
 
 
 deleteIngredient :: ConnectionPool
-                 -> Ingredient
+                 -> IngredientName
                  -> IO ()
-deleteIngredient backend tag =
+deleteIngredient backend name =
   flip runSqlPool backend $ do
-    mEnt <- getBy (UniqueIngredient tag)
+    mEnt <- getBy (UniqueIngredientName name)
     case mEnt of
       Nothing -> pure ()
-      Just (Entity k _) -> delete k
+      Just (Entity k _) -> do
+        delete k
+        -- FIXME diet and ingredient might have to be defined in the same module -
+        -- deleting a diet doesn't remove linked ingredients.
+        xs <- selectList [IngredientDietViolationIngredientViolator ==. k] []
+        forM_ xs $ \(Entity k' _) -> delete k
 
 
-getIngredientId :: ConnectionPool
-                -> Ingredient
-                -> IO (Maybe StoredIngredientId)
-getIngredientId backend tag =
+getStoredIngredientId :: ConnectionPool
+                      -> IngredientName
+                      -> IO (Maybe StoredIngredientId)
+getStoredIngredientId backend name =
   flip runSqlPool backend $ do
-    mEnt <- getBy (UniqueIngredient tag)
+    mEnt <- getBy (UniqueIngredient name)
     pure ((\(Entity k _) -> k) <$> mEnt)
 
 
+getIngredientNameById :: ConnectionPool
+                      -> StoredIngredientId
+                      -> IO (Maybe IngredientName)
+getIngredientNameById backend ingId =
+  fmap (\(StoredIngredient t) -> t) <$> runSqlPool (get ingId) backend
+
+
 getIngredientById :: ConnectionPool
-               -> StoredIngredientId
-               -> IO (Maybe Ingredient)
-getIngredientById backend tagId =
-  fmap (\(StoredIngredient t) -> t) <$> runSqlPool (get tagId) backend
+                  -> StoredIngredientId
+                  -> IO (Maybe Ingredient)
+getIngredientById backend ingId = do
+  mName <- liftIO (getIngredientNameById backend ingId)
+  case mName of
+    Nothing -> pure Nothing
+    Just name -> do
+      xs <- selectList [IngredientDietViolationIngredientViolator ==. ingId] []
+      voids <- fmap catMaybes $ forM_ xs $ \(Entity _ (IngredientDietViolation _ d)) ->
+        liftIO (getDietById backend d)
+      pure (Ingredient name voids)
 
-
-
-getIngredients :: ConnectionPool
-               -> IO [Ingredient]
-getIngredients backend =
-  flip runSqlPool backend $ do
-     xs <- selectList [] []
-     pure $ (\(Entity _ (StoredIngredient x)) -> x) <$> xs
+-- getIngredients :: ConnectionPool
+--                -> IO [Ingredient]
+-- getIngredients backend =
+--   flip runSqlPool backend $ do
+--      xs <- selectList [] []
+--      pure $ (\(Entty _ (StoredIngredient x)) -> x) <$> xs
