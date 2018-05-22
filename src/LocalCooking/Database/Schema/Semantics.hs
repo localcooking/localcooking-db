@@ -60,12 +60,13 @@ MealTag
     deriving Eq Show
 
 StoredMenu
-    storedMenuPublished Day
+    storedMenuPublished Day Maybe
     storedMenuDeadline Day
     storedMenuHeading Text
     storedMenuDescription MarkdownText
     storedMenuImages [ImageSource]
     storedMenuAuthor UserId
+    UniqueMenuDeadline storedMenuAuthor storedMenuDeadline
     deriving Eq Show
 
 MenuTag
