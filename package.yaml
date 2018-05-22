@@ -35,6 +35,7 @@ dependencies:
 - persistent
 - persistent-template
 - QuickCheck
+- quickcheck-instances
 - resourcet
 - saltine
 - text

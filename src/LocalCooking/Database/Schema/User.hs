@@ -25,7 +25,7 @@ import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkM
 
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-User
+StoredUser
     created UTCTime
     email EmailAddress
     password HashedPassword
@@ -33,47 +33,59 @@ User
     deriving Eq Show
 |]
 
-instance Hashable (Key User) where
+instance Hashable (Key StoredUser) where
   hashWithSalt salt x = hashWithSalt salt (toJSON x)
 
-instance Eq (EntityField User typ) where
+instance Eq (EntityField StoredUser typ) where
   x == y = case x of
-    UserPassword -> case y of
-      UserPassword -> True
-    UserEmail -> case y of
-      UserEmail -> True
-    UserId -> case y of
-      UserId -> True
+    StoredUserCreated -> case y of
+      StoredUserCreated -> True
+    StoredUserPassword -> case y of
+      StoredUserPassword -> True
+    StoredUserEmail -> case y of
+      StoredUserEmail -> True
+    StoredUserId -> case y of
+      StoredUserId -> True
 
-instance ToJSON (EntityField User typ) where
+instance ToJSON (EntityField StoredUser typ) where
   toJSON x = case x of
-    UserPassword -> String "password"
-    UserEmail -> String "email"
-    UserId -> String "userId"
+    StoredUserCreated -> String "created"
+    StoredUserPassword -> String "password"
+    StoredUserEmail -> String "email"
+    StoredUserId -> String "storedUserId"
 
-instance FromJSON (EntityField User HashedPassword) where
+instance FromJSON (EntityField StoredUser UTCTime) where
   parseJSON json = case json of
     String s
-      | s == "password" -> pure UserPassword
+      | s == "created" -> pure StoredUserCreated
       | otherwise -> fail'
     _ -> fail'
     where
-      fail' = typeMismatch "EntityField User" json
+      fail' = typeMismatch "EntityField StoredUser" json
 
-instance FromJSON (EntityField User EmailAddress) where
+instance FromJSON (EntityField StoredUser HashedPassword) where
   parseJSON json = case json of
     String s
-      | s == "email" -> pure UserEmail
+      | s == "password" -> pure StoredUserPassword
       | otherwise -> fail'
     _ -> fail'
     where
-      fail' = typeMismatch "EntityField User" json
+      fail' = typeMismatch "EntityField StoredUser" json
 
-instance FromJSON (EntityField User (Key User)) where
+instance FromJSON (EntityField StoredUser EmailAddress) where
   parseJSON json = case json of
     String s
-      | s == "userId" -> pure UserId
+      | s == "email" -> pure StoredUserEmail
       | otherwise -> fail'
     _ -> fail'
     where
-      fail' = typeMismatch "EntityField User" json
+      fail' = typeMismatch "EntityField StoredUser" json
+
+instance FromJSON (EntityField StoredUser (Key StoredUser)) where
+  parseJSON json = case json of
+    String s
+      | s == "storedUserId" -> pure StoredUserId
+      | otherwise -> fail'
+    _ -> fail'
+    where
+      fail' = typeMismatch "EntityField StoredUser" json

@@ -11,7 +11,7 @@
 
 module LocalCooking.Database.Schema.User.Pending where
 
-import LocalCooking.Database.Schema.User (UserId)
+import LocalCooking.Database.Schema.User (StoredUserId)
 
 import Data.Hashable (Hashable (..))
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
@@ -22,7 +22,7 @@ import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkM
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 PendingRegistrationConfirm
-    pendingRegister UserId
+    pendingRegister StoredUserId
     UniquePendingRegistration pendingRegister
     deriving Eq Show
 |]
@@ -42,7 +42,7 @@ instance ToJSON (EntityField PendingRegistrationConfirm typ) where
     PendingRegistrationConfirmPendingRegister -> String "pendingRegister"
     PendingRegistrationConfirmId -> String "pendingRegisterConfirmId"
 
-instance FromJSON (EntityField PendingRegistrationConfirm UserId) where
+instance FromJSON (EntityField PendingRegistrationConfirm StoredUserId) where
   parseJSON json = case json of
     String s
       | s == "pendingRegister" -> pure PendingRegistrationConfirmPendingRegister

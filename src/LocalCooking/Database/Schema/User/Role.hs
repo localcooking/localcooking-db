@@ -11,7 +11,7 @@
 
 module LocalCooking.Database.Schema.User.Role where
 
-import LocalCooking.Database.Schema.User (UserId)
+import LocalCooking.Database.Schema.User (StoredUserId)
 import LocalCooking.Common.User.Role (UserRole)
 
 import Data.Hashable (Hashable (..))
@@ -24,7 +24,7 @@ import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkM
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 UserRoleStored
     userRole UserRole
-    userRoleOwner UserId
+    userRoleOwner StoredUserId
     UniqueUserRole userRole userRoleOwner
     deriving Eq Show
 |]
@@ -56,7 +56,7 @@ instance FromJSON (EntityField UserRoleStored UserRole) where
     where
       fail' = typeMismatch "EntityField User" json
 
-instance FromJSON (EntityField UserRoleStored UserId) where
+instance FromJSON (EntityField UserRoleStored StoredUserId) where
   parseJSON json = case json of
     String s
       | s == "userRoleOwner" -> pure UserRoleStoredUserRoleOwner

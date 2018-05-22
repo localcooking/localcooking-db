@@ -11,7 +11,7 @@
 
 module LocalCooking.Database.Schema.Facebook.UserDetails where
 
-import LocalCooking.Database.Schema.User (UserId)
+import LocalCooking.Database.Schema.User (StoredUserId)
 import Facebook.Types (FacebookUserId)
 
 import Data.Hashable (Hashable (..))
@@ -28,7 +28,7 @@ import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkM
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 FacebookUserDetails
     facebookUserId FacebookUserId
-    facebookUserOwner UserId
+    facebookUserOwner StoredUserId
     UniqueFacebookUserId facebookUserId
     FacebookUserDetailsOwner facebookUserOwner
     deriving Eq Show
@@ -61,7 +61,7 @@ instance FromJSON (EntityField FacebookUserDetails FacebookUserId) where
     where
       fail' = typeMismatch "EntityField User" json
 
-instance FromJSON (EntityField FacebookUserDetails UserId) where
+instance FromJSON (EntityField FacebookUserDetails StoredUserId) where
   parseJSON json = case json of
     String s
       | s == "facebookUserOwner" -> pure FacebookUserDetailsFacebookUserOwner

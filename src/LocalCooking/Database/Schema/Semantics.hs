@@ -18,7 +18,7 @@ import LocalCooking.Database.Schema.IngredientDiet (StoredIngredientId)
 import LocalCooking.Common.Order (OrderProgress)
 import LocalCooking.Common.Rating (Rating)
 import LocalCooking.Common.User.Name (Name)
-import LocalCooking.Semantic.Mitch (ReviewId)
+import LocalCooking.Semantics.Mitch (ReviewId)
 
 import Data.Image.Source (ImageSource)
 import Data.Text (Text)

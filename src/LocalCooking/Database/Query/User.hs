@@ -19,8 +19,8 @@ import LocalCooking.Database.Schema.User.Pending
 import LocalCooking.Database.Schema.User.Role
   ( EntityField (UserRoleStoredUserRoleOwner), UserRoleStored (..)
   )
-import LocalCooking.Semantic.Common (Register (..), Login (..), SocialLogin (..), SocialLoginForm (..))
-import qualified LocalCooking.Semantic.Common as Semantic
+import LocalCooking.Semantics.Common (Register (..), Login (..), SocialLogin (..), SocialLoginForm (..))
+import qualified LocalCooking.Semantics.Common as Semantic
 import LocalCooking.Common.User.Password (HashedPassword)
 import LocalCooking.Common.User.Role (UserRole (Customer, Admin))
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
