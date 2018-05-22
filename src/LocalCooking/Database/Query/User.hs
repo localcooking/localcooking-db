@@ -40,42 +40,22 @@ import Test.QuickCheck (Arbitrary (..), oneof)
 
 
 
-data RegisterFailure
-  = EmailExists
-  deriving (Eq, Show, Generic)
-
-instance ToJSON RegisterFailure where
-  toJSON x = String $ case x of
-    EmailExists -> "email-exists"
-
-instance FromJSON RegisterFailure where
-  parseJSON json = case json of
-    String x
-      | x == "email-exists" -> pure EmailExists
-      | otherwise -> fail'
-    _ -> fail'
-    where
-      fail' = typeMismatch "RegisterFailure" json
-
-instance Arbitrary RegisterFailure where
-  arbitrary = pure EmailExists
-
 
 
 registerUser :: ConnectionPool
              -> Register
-             -> IO (Either RegisterFailure UserId)
+             -> IO (Maybe UserId)
 registerUser backend (Register email password social) = do
   now <- getCurrentTime
   flip runSqlPool backend $ do
     mUserId <- liftIO (userIdByEmail backend email)
     case mUserId of
-      Just _ -> pure (Left EmailExists)
+      Just _ -> pure Nothing
       Nothing -> do
         userId <- insert (User now email password)
         insert_ (PendingRegistrationConfirm userId)
         liftIO (storeSocialLoginForm backend userId social)
-        pure (Right userId)
+        pure (Just userId)
 
 
 confirmEmail :: ConnectionPool
@@ -94,16 +74,6 @@ confirmEmail backend email =
             delete pendingKey
             pure True
 
-
-getEmail :: ConnectionPool
-         -> UserId
-         -> IO (Maybe EmailAddress)
-getEmail backend owner =
-  flip runSqlPool backend $ do
-    mEnt <- get owner
-    case mEnt of
-      Nothing -> pure Nothing
-      Just (User _ email _) -> pure (Just email)
 
 
 userIdByEmail :: ConnectionPool
