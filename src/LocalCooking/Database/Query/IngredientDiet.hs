@@ -6,10 +6,11 @@ import LocalCooking.Database.Schema.IngredientDiet
 import LocalCooking.Common.Ingredient (Ingredient (..), IngredientName)
 import LocalCooking.Common.Diet (Diet)
 
-import Control.Monad (forM_, forM)
-import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.Maybe (catMaybes)
-import Database.Persist (Entity (..), get, getBy, delete, insert, insert_, selectList, (==.))
+import qualified Data.Set as Set
+import Control.Monad (forM_, forM, void)
+import Control.Monad.IO.Class (MonadIO (liftIO))
+import Database.Persist (Entity (..), get, getBy, delete, deleteWhere, insert, insert_, selectList, (==.))
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
 
@@ -18,9 +19,13 @@ insertIngredient :: ConnectionPool
                  -> IO ()
 insertIngredient backend (Ingredient name voids) =
   flip runSqlPool backend $ do
-    ingId <- insert (StoredIngredient name)
-    ids <- fmap catMaybes $ forM voids $ \d -> liftIO (getDietId backend d)
-    forM_ ids $ \i -> insert_ (IngredientDietViolation ingId i)
+    mEnt <- getBy (UniqueIngredientName name)
+    case mEnt of
+      Nothing -> do
+        insert_ (StoredIngredient name)
+        void $ liftIO $ setViolations backend name voids
+      Just _ -> do
+        void $ liftIO $ setViolations backend name voids
 
 
 
@@ -83,6 +88,44 @@ insertDiet :: ConnectionPool
 insertDiet backend name =
   flip runSqlPool backend $
     insert_ (StoredDiet name)
+
+
+registerViolation :: ConnectionPool
+                  -> IngredientName
+                  -> Diet
+                  -> IO Bool
+registerViolation backend name diet =
+  flip runSqlPool backend $ do
+    mIngId <- liftIO (getStoredIngredientId backend name)
+    mDietId <- liftIO (getDietId backend diet)
+    case (,) <$> mIngId <*> mDietId of
+      Nothing -> pure False
+      Just (ingId,dietId) -> do
+        insert_ (IngredientDietViolation ingId dietId)
+        pure True
+
+
+setViolations :: ConnectionPool
+              -> IngredientName
+              -> [Diet]
+              -> IO Bool
+setViolations backend name diets =
+  flip runSqlPool backend $ do
+    mIngId <- liftIO (getStoredIngredientId backend name)
+    case mIngId of
+      Nothing -> pure False
+      Just ingId -> do
+        oldDietIds <- fmap (fmap (\(Entity _ (IngredientDietViolation _ k)) -> k))
+                    $ selectList [IngredientDietViolationIngredientViolator ==. ingId] []
+        newDietIds <- fmap catMaybes $ forM diets $ liftIO . getDietId backend
+        let toRemove = Set.fromList oldDietIds `Set.difference` Set.fromList newDietIds
+            toAdd = Set.fromList newDietIds `Set.difference` Set.fromList oldDietIds
+        forM_ toRemove $ \dietId -> deleteWhere
+          [ IngredientDietViolationIngredientViolator ==. ingId
+          , IngredientDietViolationDietViolated ==. dietId
+          ]
+        forM_ toAdd $ \dietId -> insert_ (IngredientDietViolation ingId dietId)
+        pure True
 
 
 deleteDiet :: ConnectionPool
