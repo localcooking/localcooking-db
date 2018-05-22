@@ -9,10 +9,10 @@
   , GeneralizedNewtypeDeriving
   #-}
 
-module LocalCooking.Database.Schema.Ingredient where
+module LocalCooking.Database.Schema.IngredientDiet where
 
-import LocalCooking.Database.Schema.Diet (StoredDietId)
 import LocalCooking.Common.Ingredient (IngredientName)
+import LocalCooking.Common.Diet (Diet)
 
 import Data.Hashable (Hashable (..))
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
@@ -29,6 +29,11 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 StoredIngredient
     ingredientName IngredientName
     UniqueIngredientName ingredientName
+    deriving Eq Show
+
+StoredDiet
+    diet Diet
+    UniqueDiet diet
     deriving Eq Show
 
 IngredientDietViolation

@@ -11,7 +11,7 @@
 
 module LocalCooking.Database.Schema.User.Role where
 
-import LocalCooking.Database.Schema.User.Password (UserId)
+import LocalCooking.Database.Schema.User (UserId)
 import LocalCooking.Common.User.Role (UserRole)
 
 import Data.Hashable (Hashable (..))

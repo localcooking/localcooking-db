@@ -3,7 +3,7 @@ module LocalCooking.Database.Query.Salt where
 import LocalCooking.Database.Schema.Salt
   ( PasswordSalt (..)
   )
-import LocalCooking.Common.Password (HashedPassword (..))
+import LocalCooking.Common.User.Password (HashedPassword (..))
 
 import Database.Persist (Entity (..), insert_, selectFirst)
 import Database.Persist.Sql (ConnectionPool, runSqlPool)

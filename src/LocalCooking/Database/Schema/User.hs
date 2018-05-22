@@ -10,7 +10,7 @@
   , GeneralizedNewtypeDeriving
   #-}
 
-module LocalCooking.Database.Schema.User.Password where
+module LocalCooking.Database.Schema.User where
 
 import LocalCooking.Common.Password (HashedPassword)
 

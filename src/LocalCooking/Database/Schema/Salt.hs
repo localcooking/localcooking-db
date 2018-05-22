@@ -11,7 +11,7 @@
 
 module LocalCooking.Database.Schema.Salt where
 
-import LocalCooking.Common.Password (HashedPassword)
+import LocalCooking.Common.User.Password (HashedPassword)
 
 import Data.Hashable (Hashable (..))
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))

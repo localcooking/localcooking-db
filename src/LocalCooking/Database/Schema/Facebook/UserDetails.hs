@@ -11,7 +11,7 @@
 
 module LocalCooking.Database.Schema.Facebook.UserDetails where
 
-import LocalCooking.Database.Schema.User.Password (UserId)
+import LocalCooking.Database.Schema.User (UserId)
 import Facebook.Types (FacebookUserId)
 
 import Data.Hashable (Hashable (..))

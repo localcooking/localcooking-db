@@ -11,7 +11,7 @@
 
 module LocalCooking.Database.Schema.User.Pending where
 
-import LocalCooking.Database.Schema.User.Password (UserId)
+import LocalCooking.Database.Schema.User (UserId)
 
 import Data.Hashable (Hashable (..))
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))

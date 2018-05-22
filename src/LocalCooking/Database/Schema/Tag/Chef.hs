@@ -9,9 +9,9 @@
   , GeneralizedNewtypeDeriving
   #-}
 
-module LocalCooking.Database.Schema.Diet where
+module LocalCooking.Database.Schema.Tag.Chef where
 
-import LocalCooking.Common.Diet (Diet)
+import LocalCooking.Common.Tag.Chef (ChefTag)
 
 import Data.Hashable (Hashable (..))
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
@@ -21,8 +21,8 @@ import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkM
 
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-StoredDiet
-    diet Diet
-    UniqueDiet diet
+StoredChefTag
+    chefTag ChefTag
+    UniqueChefTag chefTag
     deriving Eq Show
 |]
