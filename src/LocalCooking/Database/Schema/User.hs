@@ -28,6 +28,7 @@ User
     created UTCTime
     email EmailAddress
     password HashedPassword
+    UniqueEmail email
     deriving Eq Show
 |]
 

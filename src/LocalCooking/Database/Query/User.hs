@@ -10,13 +10,8 @@ import LocalCooking.Database.Schema.Facebook
   ( FacebookUserDetails (..), FacebookUserAccessTokenStored (..)
   , Unique (..)
   )
-import LocalCooking.Database.Schema.User.Email
-  ( EmailAddressStored (..)
-  , Unique (..)
-  , EntityField (EmailAddressStoredEmailAddress)
-  )
-import LocalCooking.Database.Schema.User.Password
-  ( User (..), EntityField (UserPassword), UserId
+import LocalCooking.Database.Schema.User
+  ( User (..), EntityField (UserPassword, UserEmail), UserId, Unique (UniqueEmail)
   )
 import LocalCooking.Database.Schema.User.Pending
   ( PendingRegistrationConfirm (..)
@@ -24,6 +19,8 @@ import LocalCooking.Database.Schema.User.Pending
 import LocalCooking.Database.Schema.User.Role
   ( EntityField (UserRoleStoredUserRoleOwner), UserRoleStored (..)
   )
+import LocalCooking.Semantics.Common (Register (..), Login (..), SocialLogin (..))
+import qualified LocalCooking.Semantics.Common as Semantic
 import LocalCooking.Common.User.Password (HashedPassword)
 import LocalCooking.Common.User.Role (UserRole (Customer, Admin))
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
@@ -33,7 +30,7 @@ import Data.Aeson.Types (typeMismatch)
 import Data.Maybe (catMaybes)
 import qualified Data.Set as Set
 import Data.Time (getCurrentTime)
-import Control.Monad (forM, forM_)
+import Control.Monad (forM, forM_, void)
 import Control.Monad.IO.Class (liftIO)
 import Text.EmailAddress (EmailAddress)
 import Database.Persist (Entity (..), insert, insert_, delete, deleteBy, get, getBy, (=.), update, (==.), selectList)
@@ -66,19 +63,18 @@ instance Arbitrary RegisterFailure where
 
 
 registerUser :: ConnectionPool
-             -> EmailAddress
-             -> HashedPassword
+             -> Register
              -> IO (Either RegisterFailure UserId)
-registerUser backend email password = do
+registerUser backend (Register email password social) = do
   now <- getCurrentTime
   flip runSqlPool backend $ do
-    mEnt <- getBy (UniqueEmailAddress email)
-    case mEnt of
+    mUserId <- liftIO (userIdByEmail backend email)
+    case mUserId of
       Just _ -> pure (Left EmailExists)
       Nothing -> do
-        userId <- insert (User now password)
-        insert_ (EmailAddressStored email userId)
+        userId <- insert (User now email password)
         insert_ (PendingRegistrationConfirm userId)
+        liftIO (storeSocialLoginForm backend userId social)
         pure (Right userId)
 
 
@@ -87,10 +83,10 @@ confirmEmail :: ConnectionPool
              -> IO Bool
 confirmEmail backend email =
   flip runSqlPool backend $ do
-    mUserEnt <- getBy (UniqueEmailAddress email)
-    case mUserEnt of
+    mUserId <- liftIO (userIdByEmail backend email)
+    case mUserId of
       Nothing -> pure False
-      Just (Entity _ (EmailAddressStored _ owner)) -> do
+      Just owner -> do
         mPendingEnt <- getBy (UniquePendingRegistration owner)
         case mPendingEnt of
           Nothing -> pure False
@@ -104,10 +100,10 @@ getEmail :: ConnectionPool
          -> IO (Maybe EmailAddress)
 getEmail backend owner =
   flip runSqlPool backend $ do
-    mEmailEnt <- getBy (EmailAddressOwner owner)
+    mEnt <- get owner
     case mEmailEnt of
       Nothing -> pure Nothing
-      Just (Entity _ (EmailAddressStored email _)) -> pure (Just email)
+      Just (User _ email _) -> pure (Just email)
 
 
 userIdByEmail :: ConnectionPool
@@ -115,19 +111,21 @@ userIdByEmail :: ConnectionPool
               -> IO (Maybe UserId)
 userIdByEmail backend email =
   flip runSqlPool backend $ do
-    mEmailEnt <- getBy (UniqueEmailAddress email)
+    mEmailEnt <- getBy (UniqueEmail email)
     case mEmailEnt of
       Nothing -> pure Nothing
-      Just (Entity _ (EmailAddressStored _ userId)) -> pure (Just userId)
+      Just (Entity userId _) -> pure (Just userId)
 
 
-registerFBUserId :: ConnectionPool
-                 -> UserId
-                 -> FacebookUserId
-                 -> IO ()
-registerFBUserId backend userId fbUserId =
+storeSocialLoginForm :: ConnectionPool
+                     -> UserId
+                     -> SocialLoginForm
+                     -> IO ()
+storeSocialLoginForm backend userId (SocialLoginForm mFb) =
   flip runSqlPool backend $
-    insert_ $ FacebookUserDetails fbUserId userId
+    case mFb of
+      Nothing -> pure ()
+      Just fb -> insert_ (FacebookUserDetails fbUserId userId)
 
 
 data LoginFailure
@@ -159,60 +157,51 @@ instance Arbitrary LoginFailure where
 
 -- | Doesn't write to database, read-only query
 login :: ConnectionPool
-      -> EmailAddress
-      -> HashedPassword
+      -> Login
       -> IO (Either LoginFailure UserId)
-login backend email password =
+login backend (Login email password) =
   flip runSqlPool backend $ do
-    mEmail <- getBy (UniqueEmailAddress email)
-    case mEmail of
+    mUserEnt <- getBy (UniqueEmail email)
+    case mUserEnt of
       Nothing -> pure (Left EmailDoesntExist)
-      Just (Entity email' (EmailAddressStored _ owner)) -> do
-        -- no need to check for pending email here - only when filing orders, stuff like that
-        mUser <- get owner
-        case mUser of
-          Nothing -> do
-            -- clean-up:
-            delete email'
-            pure (Left EmailDoesntExist)
-          Just (User _ password')
-            | password == password' -> pure (Right owner)
-            | otherwise -> pure (Left BadPassword)
+      Just (Entity owner (User _ _ password'))
+        | password == password' -> pure (Right owner)
+        | otherwise -> pure (Left BadPassword)
 
 
 -- | NOTE: Doesn't verify the authenticity of FacebookUserAccessToken, but stores it
-loginWithFB :: ConnectionPool
-            -> FacebookUserAccessToken
-            -> FacebookUserId
+socialLogin :: ConnectionPool
+            -> SocialLogin
             -> IO (Maybe UserId)
-loginWithFB backend fbToken fbUserId =
-  flip runSqlPool backend $ do
-    mDetails <- getBy (UniqueFacebookUserId fbUserId)
-    case mDetails of
-      Nothing -> pure Nothing
-      Just (Entity fbUserIdId (FacebookUserDetails _ owner)) -> do
-        insert_ (FacebookUserAccessTokenStored fbToken fbUserIdId)
-        pure (Just owner)
+socailLogin backend social =
+  flip runSqlPool backend $
+    case socail of
+      SocialLoginFB fbUserId fbToken -> do
+        mDetails <- getBy (UniqueFacebookUserId fbUserId)
+        case mDetails of
+          Nothing -> pure Nothing
+          Just (Entity fbUserIdId (FacebookUserDetails _ owner)) -> do
+            insert_ (FacebookUserAccessTokenStored fbToken fbUserIdId)
+            pure (Just owner)
 
 
 changeSecurityDetails :: ConnectionPool
                       -> UserId
-                      -> (EmailAddress, HashedPassword)
+                      -> Semantic.User
                       -> HashedPassword
                       -> IO Bool
-changeSecurityDetails backend userId (email,newPassword) password =
+changeSecurityDetails backend userId (Semantic.User email newPassword social conf) password =
   flip runSqlPool backend $ do
     mUser <- get userId
     case mUser of
       Nothing -> pure False
-      Just (User _ password')
+      Just (User _ _ password')
         | password' /= password -> pure False
         | otherwise -> do
-            mEmail <- getBy (EmailAddressOwner userId)
-            case mEmail of
-              Nothing -> insert_ (EmailAddressStored email userId)
-              Just (Entity emailKey _) -> update emailKey [EmailAddressStoredEmailAddress =. email]
-            update userId [UserPassword =. newPassword]
+            update userId [UserEmail =. email, UserPassword =. newPassword]
+            liftIO (storeSocialLoginForm backend userId social)
+            when conf $
+              void $ liftIO $ confirmEmail backend email
             pure True
 
 
@@ -228,111 +217,113 @@ checkPassword backend userId password =
       Just (User _ password') -> pure (password == password')
 
 
-getUsers :: ConnectionPool
-         -> IO [(EmailAddress, [UserRole])]
-getUsers backend =
-  flip runSqlPool backend $ do
-    userIds <- selectList [] []
-    fmap catMaybes $ forM userIds $ \(Entity userId _) -> do
-      mEmail <- liftIO (getEmail backend userId)
-      roles <- liftIO (getRoles backend userId)
-      pure $ (,roles) <$> mEmail
+-- getUsers :: ConnectionPool
+--          -> IO [Semantic.User]
+-- getUsers backend =
+--   flip runSqlPool backend $ do
+--     userIds <- selectList [] []
+--     fmap catMaybes $ forM userIds $ \(Entity userId _) -> do
+--       mEmail <- liftIO (getEmail backend userId)
+--       roles <- liftIO (getRoles backend userId)
+--       pure $ (,roles) <$> mEmail
 
-deleteUser :: ConnectionPool
-           -> EmailAddress
-           -> IO ()
-deleteUser backend e =
-  flip runSqlPool backend $ do
-    mUid <- liftIO (userIdByEmail backend e)
-    case mUid of
-      Nothing -> pure ()
-      Just uid -> do
-        delete uid
-        deleteBy (EmailAddressOwner uid)
-        deleteBy (UniquePendingRegistration uid)
-        rs <- selectList [UserRoleStoredUserRoleOwner ==. uid] []
-        forM_ rs $ \(Entity key _) -> delete key
+-- FIXME Should be defined in admin
+-- deleteUser :: ConnectionPool
+--            -> EmailAddress
+--            -> IO ()
+-- deleteUser backend e =
+--   flip runSqlPool backend $ do
+--     mUid <- liftIO (userIdByEmail backend e)
+--     case mUid of
+--       Nothing -> pure ()
+--       Just uid -> do
+--         delete uid
+--         deleteBy (EmailAddressOwner uid)
+--         deleteBy (UniquePendingRegistration uid)
+--         rs <- selectList [UserRoleStoredUserRoleOwner ==. uid] []
+--         forM_ rs $ \(Entity key _) -> delete key
 
-updateUser :: ConnectionPool
-           -> EmailAddress
-           -> [UserRole]
-           -> Maybe HashedPassword
-           -> IO ()
-updateUser backend e roles pw =
-  flip runSqlPool backend $ do
-    mUid <- liftIO (userIdByEmail backend e)
-    case mUid of
-      Nothing -> pure ()
-      Just uid -> do
-        let allRoles = Set.fromList [Customer .. Admin]
-            removedRoles = allRoles `Set.difference` (Set.fromList roles)
-        liftIO $ do
-          forM_ removedRoles (delRole backend uid)
-          forM_ roles (addRole backend uid)
-        case pw of
-          Nothing -> pure ()
-          Just pw' -> update uid [UserPassword =. pw']
-
-
-addRole :: ConnectionPool
-        -> UserId
-        -> UserRole
-        -> IO ()
-addRole backend userId userRole =
-  flip runSqlPool backend $ do
-    mUserRoleEnt <- getBy (UniqueUserRole userRole userId)
-    case mUserRoleEnt of
-      Just _ -> pure ()
-      Nothing -> insert_ (UserRoleStored userRole userId)
+-- FIXME Should be defined in admin
+-- updateUser :: ConnectionPool
+--            -> EmailAddress
+--            -> [UserRole]
+--            -> Maybe HashedPassword
+--            -> IO ()
+-- updateUser backend e roles pw =
+--   flip runSqlPool backend $ do
+--     mUid <- liftIO (userIdByEmail backend e)
+--     case mUid of
+--       Nothing -> pure ()
+--       Just uid -> do
+--         let allRoles = Set.fromList [Customer .. Admin]
+--             removedRoles = allRoles `Set.difference` Set.fromList roles
+--         liftIO $ do
+--           forM_ removedRoles (delRole backend uid)
+--           forM_ roles (addRole backend uid)
+--         case pw of
+--           Nothing -> pure ()
+--           Just pw' -> update uid [UserPassword =. pw']
 
 
-delRole :: ConnectionPool
-        -> UserId
-        -> UserRole
-        -> IO ()
-delRole backend userId userRole =
-  flip runSqlPool backend $ do
-    mUserRoleEnt <- getBy (UniqueUserRole userRole userId)
-    case mUserRoleEnt of
-      Nothing -> pure ()
-      Just (Entity userRoleKey _) -> delete userRoleKey
+-- addRole :: ConnectionPool
+--         -> UserId
+--         -> UserRole
+--         -> IO ()
+-- addRole backend userId userRole =
+--   flip runSqlPool backend $ do
+--     mUserRoleEnt <- getBy (UniqueUserRole userRole userId)
+--     case mUserRoleEnt of
+--       Just _ -> pure ()
+--       Nothing -> insert_ (UserRoleStored userRole userId)
 
 
-hasRole :: ConnectionPool
-        -> UserId
-        -> UserRole
-        -> IO Bool
-hasRole backend userId userRole =
-  flip runSqlPool backend $ do
-    mUserRoleEnt <- getBy (UniqueUserRole userRole userId)
-    case mUserRoleEnt of
-      Nothing -> pure False
-      Just _  -> pure True
+-- delRole :: ConnectionPool
+--         -> UserId
+--         -> UserRole
+--         -> IO ()
+-- delRole backend userId userRole =
+--   flip runSqlPool backend $ do
+--     mUserRoleEnt <- getBy (UniqueUserRole userRole userId)
+--     case mUserRoleEnt of
+--       Nothing -> pure ()
+--       Just (Entity userRoleKey _) -> delete userRoleKey
 
 
-getRoles :: ConnectionPool
-         -> UserId
-         -> IO [UserRole]
-getRoles backend userId =
-  flip runSqlPool backend $ do
-    userRoleEnts <- selectList [UserRoleStoredUserRoleOwner ==. userId] []
-    pure ((\(Entity _ (UserRoleStored x _)) -> x) <$> userRoleEnts)
+-- hasRole :: ConnectionPool
+--         -> UserId
+--         -> UserRole
+--         -> IO Bool
+-- hasRole backend userId userRole =
+--   flip runSqlPool backend $ do
+--     mUserRoleEnt <- getBy (UniqueUserRole userRole userId)
+--     case mUserRoleEnt of
+--       Nothing -> pure False
+--       Just _  -> pure True
 
 
-addPendingEmail :: ConnectionPool
-                -> UserId
-                -> IO ()
-addPendingEmail backend userId =
-  flip runSqlPool backend $
-    insert_ (PendingRegistrationConfirm userId)
+-- getRoles :: ConnectionPool
+--          -> UserId
+--          -> IO [UserRole]
+-- getRoles backend userId =
+--   flip runSqlPool backend $ do
+--     userRoleEnts <- selectList [UserRoleStoredUserRoleOwner ==. userId] []
+--     pure ((\(Entity _ (UserRoleStored x _)) -> x) <$> userRoleEnts)
 
 
-removePendingEmail :: ConnectionPool
-                   -> UserId
-                   -> IO ()
-removePendingEmail backend userId =
-  flip runSqlPool backend $ do
-    mEnt <- getBy (UniquePendingRegistration userId)
-    case mEnt of
-      Nothing -> pure ()
-      Just (Entity key _) -> delete key
+-- addPendingEmail :: ConnectionPool
+--                 -> UserId
+--                 -> IO ()
+-- addPendingEmail backend userId =
+--   flip runSqlPool backend $
+--     insert_ (PendingRegistrationConfirm userId)
+
+
+-- removePendingEmail :: ConnectionPool
+--                    -> UserId
+--                    -> IO ()
+-- removePendingEmail backend userId =
+--   flip runSqlPool backend $ do
+--     mEnt <- getBy (UniquePendingRegistration userId)
+--     case mEnt of
+--       Nothing -> pure ()
+--       Just (Entity key _) -> delete key
