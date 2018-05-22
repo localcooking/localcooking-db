@@ -12,12 +12,13 @@
 
 module LocalCooking.Database.Schema.User where
 
-import LocalCooking.Common.Password (HashedPassword)
+import LocalCooking.Common.User.Password (HashedPassword)
 
 import Data.Hashable (Hashable (..))
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
 import Data.Aeson.Types (typeMismatch)
 import Data.Time (UTCTime)
+import Text.EmailAddress (EmailAddress)
 import Database.Persist.Sql (SqlBackend)
 import Database.Persist.Class (PersistEntity (EntityField, Key), PersistCore (BackendKey))
 import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)

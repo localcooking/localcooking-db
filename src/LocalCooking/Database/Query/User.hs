@@ -6,21 +6,21 @@
 
 module LocalCooking.Database.Query.User where
 
-import LocalCooking.Database.Schema.Facebook
-  ( FacebookUserDetails (..), FacebookUserAccessTokenStored (..)
-  , Unique (..)
-  )
+import LocalCooking.Database.Schema.Facebook.UserDetails
+  ( FacebookUserDetails (..), Unique (UniqueFacebookUserId))
+import LocalCooking.Database.Schema.Facebook.AccessToken
+  ( FacebookUserAccessTokenStored (..), Unique ())
 import LocalCooking.Database.Schema.User
   ( User (..), EntityField (UserPassword, UserEmail), UserId, Unique (UniqueEmail)
   )
 import LocalCooking.Database.Schema.User.Pending
-  ( PendingRegistrationConfirm (..)
+  ( PendingRegistrationConfirm (..), Unique (UniquePendingRegistration)
   )
 import LocalCooking.Database.Schema.User.Role
   ( EntityField (UserRoleStoredUserRoleOwner), UserRoleStored (..)
   )
-import LocalCooking.Semantics.Common (Register (..), Login (..), SocialLogin (..))
-import qualified LocalCooking.Semantics.Common as Semantic
+import LocalCooking.Semantic.Common (Register (..), Login (..), SocialLogin (..), SocialLoginForm (..))
+import qualified LocalCooking.Semantic.Common as Semantic
 import LocalCooking.Common.User.Password (HashedPassword)
 import LocalCooking.Common.User.Role (UserRole (Customer, Admin))
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
@@ -30,7 +30,7 @@ import Data.Aeson.Types (typeMismatch)
 import Data.Maybe (catMaybes)
 import qualified Data.Set as Set
 import Data.Time (getCurrentTime)
-import Control.Monad (forM, forM_, void)
+import Control.Monad (forM, forM_, void, when)
 import Control.Monad.IO.Class (liftIO)
 import Text.EmailAddress (EmailAddress)
 import Database.Persist (Entity (..), insert, insert_, delete, deleteBy, get, getBy, (=.), update, (==.), selectList)
@@ -101,7 +101,7 @@ getEmail :: ConnectionPool
 getEmail backend owner =
   flip runSqlPool backend $ do
     mEnt <- get owner
-    case mEmailEnt of
+    case mEnt of
       Nothing -> pure Nothing
       Just (User _ email _) -> pure (Just email)
 
@@ -125,7 +125,7 @@ storeSocialLoginForm backend userId (SocialLoginForm mFb) =
   flip runSqlPool backend $
     case mFb of
       Nothing -> pure ()
-      Just fb -> insert_ (FacebookUserDetails fbUserId userId)
+      Just fbUserId -> insert_ (FacebookUserDetails fbUserId userId)
 
 
 data LoginFailure
@@ -173,9 +173,9 @@ login backend (Login email password) =
 socialLogin :: ConnectionPool
             -> SocialLogin
             -> IO (Maybe UserId)
-socailLogin backend social =
+socialLogin backend social =
   flip runSqlPool backend $
-    case socail of
+    case social of
       SocialLoginFB fbUserId fbToken -> do
         mDetails <- getBy (UniqueFacebookUserId fbUserId)
         case mDetails of
@@ -214,7 +214,7 @@ checkPassword backend userId password =
     mUser <- get userId
     case mUser of
       Nothing -> pure False
-      Just (User _ password') -> pure (password == password')
+      Just (User _ _ password') -> pure (password == password')
 
 
 -- getUsers :: ConnectionPool

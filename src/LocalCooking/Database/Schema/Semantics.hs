@@ -13,9 +13,18 @@ module LocalCooking.Database.Schema.Semantics where
 
 import LocalCooking.Database.Schema.User (UserId)
 import LocalCooking.Database.Schema.Tag.Meal (StoredMealTagId)
+import LocalCooking.Database.Schema.Tag.Chef (StoredChefTagId)
+import LocalCooking.Database.Schema.IngredientDiet (StoredIngredientId)
 import LocalCooking.Common.Order (OrderProgress)
+import LocalCooking.Common.Rating (Rating)
+import LocalCooking.Common.User.Name (Name)
+import LocalCooking.Semantic.Mitch (ReviewId)
 
 import Data.Image.Source (ImageSource)
+import Data.Text (Text)
+import Data.Text.Markdown (MarkdownText)
+import Data.Text.Permalink (Permalink)
+import Data.Price (Price)
 import Data.Hashable (Hashable (..))
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
 import Data.Aeson.Types (typeMismatch)
@@ -41,13 +50,13 @@ StoredMeal
 MealIngredient
     mealIngredientMeal StoredMealId
     mealIngredientIngredient StoredIngredientId
-    UniqueMealsIngredient mealIngredientMeal mealIngredientIngredient
+    UniqueMealIngredient mealIngredientMeal mealIngredientIngredient
     deriving Eq Show
 
 MealTag
     mealTagMeal StoredMealId
     mealTagMealTag StoredMealTagId
-    UniqueMealsTag mealTagMeal mealTagMealTag
+    UniqueMealTag mealTagMeal mealTagMealTag
     deriving Eq Show
 
 StoredMenu
@@ -62,7 +71,7 @@ StoredMenu
 MenuTag
     menuTagMenu StoredMenuId
     menuTagMealTag StoredMealTagId
-    UniqueMealsTag menuTagMenu menuTagMealTag
+    UniqueMenuTag menuTagMenu menuTagMealTag
     deriving Eq Show
 
 StoredChef
@@ -94,6 +103,8 @@ StoredReview
     storedReviewBody MarkdownText
     storedReviewImages [ImageSource]
     storedReviewAuthor UserId
+    UniqueReviewAuthor storedReviewAuthor storedReviewOrder
+    UniqueReviewId storedReviewId
     deriving Eq Show
 
 StoredOrder

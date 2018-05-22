@@ -5,12 +5,12 @@
   , RecordWildCards
   #-}
 
-module LocalCooking.Database.Query.Sementics.Mitch where
+module LocalCooking.Database.Query.Semantics.Mitch where
 
 -- import LocalCooking.Database.Query.Ingredient (getIngredientId, getIngredientById)
 -- import LocalCooking.Database.Query.Tag.Meal (getMealTagId, getMealTagById)
-import LocalCooking.Database.Schema.Semantics (StoredMeal (..), MealsIngredient (..), MealsTag (..), EntityField (..))
-import LocalCooking.Semantics.Mitch (MealSynopsis (..), Meal (..), Chef (..))
+import LocalCooking.Database.Schema.Semantics (StoredMeal (..), MealIngredient (..), MealTag (..), EntityField (..))
+import LocalCooking.Semantic.Mitch (MealSynopsis (..), Meal (..), Chef (..))
 
 import Data.Text.Permalink (Permalink)
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
@@ -26,24 +26,24 @@ import GHC.Generics (Generic)
 import Test.QuickCheck (Arbitrary (..), oneof)
 
 
-getChef :: ConnectionPool
-        -> Permalink
-        -> IO (Maybe Chef)
-getChef backend chefId =
-  flip runSqlPool backend $ do
-    mEnt <- getBy (UniqueChefPermalink chefId)
-    case mEnt of
-      Nothing -> pure Nothing
-      Just (Entity storedChefId (StoredChef ownerId name _ bio images avatar)) -> do
-        pure $ Just $ Chef
-          { chefName = name
-          , chefPermalink = chefId
-          , chefImages = images
-          , chefBio = bio
-          , chefRating = _
-          , chefReviews = _
-          , chefActiveOrders = _
-          , chefTotalOrders = _
-          , chefTags = _
-          , chefMenus = _
-          }
+-- getChef :: ConnectionPool
+--         -> Permalink
+--         -> IO (Maybe Chef)
+-- getChef backend chefId =
+--   flip runSqlPool backend $ do
+--     mEnt <- getBy (UniqueChefPermalink chefId)
+--     case mEnt of
+--       Nothing -> pure Nothing
+--       Just (Entity storedChefId (StoredChef ownerId name _ bio images avatar)) -> do
+--         pure $ Just $ Chef
+--           { chefName = name
+--           , chefPermalink = chefId
+--           , chefImages = images
+--           , chefBio = bio
+--           , chefRating = _
+--           , chefReviews = _
+--           , chefActiveOrders = _
+--           , chefTotalOrders = _
+--           , chefTags = _
+--           , chefMenus = _
+--           }
