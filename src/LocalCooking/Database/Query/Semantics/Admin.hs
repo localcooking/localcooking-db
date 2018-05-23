@@ -14,10 +14,10 @@ import LocalCooking.Common.User.Role (UserRole)
 
 import Database.Persist
   ( Entity (..)
-  , insert, insert_
-  , delete, deleteBy, deleteWhere
-  , get, getBy
-  , (=.), update, replace, (==.)
+  , insert_
+  , delete
+  , getBy
+  , (==.)
   , selectList
   )
 import Database.Persist.Sql (ConnectionPool, runSqlPool)

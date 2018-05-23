@@ -1,7 +1,6 @@
 {-# LANGUAGE
     OverloadedStrings
   , RecordWildCards
-  , GeneralizedNewtypeDeriving
   , DeriveGeneric
   #-}
 
@@ -24,12 +23,9 @@ import Data.Text (Text)
 import Data.Text.Permalink (Permalink)
 import Data.Text.Markdown (MarkdownText)
 import Data.Time.Calendar (Day)
-import Data.Hashable (Hashable)
 import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object), (.=), object, (.:))
 import Data.Aeson.Types (typeMismatch)
 import GHC.Generics (Generic)
-import Database.Persist.Class (PersistField)
-import Database.Persist.Sql (PersistFieldSql)
 import Test.QuickCheck (Arbitrary (..))
 import Test.QuickCheck.Instances ()
 

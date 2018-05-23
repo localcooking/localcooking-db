@@ -9,21 +9,21 @@ module LocalCooking.Database.Query.Semantics.Mitch where
 
 -- import LocalCooking.Database.Query.Ingredient (getIngredientId, getIngredientById)
 -- import LocalCooking.Database.Query.Tag.Meal (getMealTagId, getMealTagById)
-import LocalCooking.Database.Schema.Semantics (StoredMeal (..), MealIngredient (..), MealTag (..), EntityField (..))
-import LocalCooking.Semantics.Mitch (MealSynopsis (..), Meal (..), Chef (..))
+-- import LocalCooking.Database.Schema.Semantics (StoredMeal (..), MealIngredient (..), MealTag (..), EntityField (..))
+-- import LocalCooking.Semantics.Mitch (MealSynopsis (..), Meal (..), Chef (..))
 
-import Data.Text.Permalink (Permalink)
-import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
-import Data.Aeson.Types (typeMismatch)
-import Data.Maybe (catMaybes)
-import qualified Data.Set as Set
-import Control.Monad (forM, forM_)
-import Control.Monad.IO.Class (liftIO)
-import Text.EmailAddress (EmailAddress)
-import Database.Persist (Entity (..), insert, insert_, delete, deleteBy, get, getBy, (=.), update, (==.), selectList)
-import Database.Persist.Sql (ConnectionPool, runSqlPool)
-import GHC.Generics (Generic)
-import Test.QuickCheck (Arbitrary (..), oneof)
+-- import Data.Text.Permalink (Permalink)
+-- import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
+-- import Data.Aeson.Types (typeMismatch)
+-- import Data.Maybe (catMaybes)
+-- import qualified Data.Set as Set
+-- import Control.Monad (forM, forM_)
+-- import Control.Monad.IO.Class (liftIO)
+-- import Text.EmailAddress (EmailAddress)
+-- import Database.Persist (Entity (..), insert, insert_, delete, deleteBy, get, getBy, (=.), update, (==.), selectList)
+-- import Database.Persist.Sql (ConnectionPool, runSqlPool)
+-- import GHC.Generics (Generic)
+-- import Test.QuickCheck (Arbitrary (..), oneof)
 
 
 -- getChef :: ConnectionPool

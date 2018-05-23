@@ -1,16 +1,13 @@
 {-# LANGUAGE
-    OverloadedStrings
-  , TupleSections
-  , DeriveGeneric
-  , RecordWildCards
+    RecordWildCards
   #-}
 
 module LocalCooking.Database.Query.Semantics.Chef where
 
 -- import LocalCooking.Database.Query.Ingredient (getIngredientId, getIngredientById)
-import LocalCooking.Database.Query.Tag.Chef (getChefTagId, getChefTagById)
-import LocalCooking.Database.Query.Tag.Meal (getMealTagId, getMealTagById)
-import LocalCooking.Database.Query.IngredientDiet (getStoredIngredientId, getIngredientById)
+import LocalCooking.Database.Query.Tag.Chef (getChefTagId)
+import LocalCooking.Database.Query.Tag.Meal (getMealTagId)
+import LocalCooking.Database.Query.IngredientDiet (getStoredIngredientId)
 import LocalCooking.Database.Schema.Semantics
   ( StoredChef (..), ChefTag (..)
   , MealTag (..), MealIngredient (..), StoredMeal (..), StoredMealId
@@ -25,25 +22,19 @@ import LocalCooking.Database.Schema.Semantics
 import LocalCooking.Database.Schema.User (StoredUserId)
 import LocalCooking.Semantics.Chef (MealSettings (..), MenuSettings (..), ChefSettings (..))
 
-import Data.Text.Permalink (Permalink)
-import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
-import Data.Aeson.Types (typeMismatch)
 import Data.Maybe (catMaybes)
 import qualified Data.Set as Set
 import Control.Monad (forM, forM_)
 import Control.Monad.IO.Class (liftIO)
-import Text.EmailAddress (EmailAddress)
 import Database.Persist
   ( Entity (..)
   , insert, insert_
-  , delete, deleteBy, deleteWhere
-  , get, getBy
-  , (=.), update, replace, (==.)
+  , deleteWhere
+  , getBy
+  , replace, (==.)
   , selectList
   )
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
-import GHC.Generics (Generic)
-import Test.QuickCheck (Arbitrary (..), oneof)
 
 
 setChef :: ConnectionPool
@@ -157,12 +148,12 @@ setMeal backend menuId MealSettings{..} =
                  $ selectList [MealIngredientMealIngredientMeal ==. mealId] []
         let toRemove = Set.fromList oldIngs `Set.difference` Set.fromList newIngs
             toAdd = Set.fromList newIngs `Set.difference` Set.fromList oldIngs
-        forM_ toRemove $ \ingId -> do
+        forM_ toRemove $ \ingId ->
           deleteWhere
             [ MealIngredientMealIngredientMeal ==. mealId
             , MealIngredientMealIngredientIngredient ==. ingId
             ]
-        forM_ toAdd $ \ingId -> do
+        forM_ toAdd $ \ingId ->
           insert_ (MealIngredient mealId ingId)
 
         newTags <- fmap catMaybes $ forM mealSettingsTags $ liftIO . getMealTagId backend
@@ -170,9 +161,9 @@ setMeal backend menuId MealSettings{..} =
                  $ selectList [MealTagMealTagMeal ==. mealId] []
         let toRemove = Set.fromList oldTags `Set.difference` Set.fromList newTags
             toAdd = Set.fromList newTags `Set.difference` Set.fromList oldTags
-        forM_ toRemove $ \tagId -> do
+        forM_ toRemove $ \tagId ->
           deleteWhere [MealTagMealTagMeal ==. mealId, MealTagMealTagMealTag ==. tagId]
-        forM_ toAdd $ \tagId -> do
+        forM_ toAdd $ \tagId ->
           insert_ (MealTag mealId tagId)
 
         pure mealId

@@ -10,7 +10,7 @@ import Data.Maybe (catMaybes)
 import qualified Data.Set as Set
 import Control.Monad (forM_, forM, void)
 import Control.Monad.IO.Class (MonadIO (liftIO))
-import Database.Persist (Entity (..), get, getBy, delete, deleteWhere, insert, insert_, selectList, (==.))
+import Database.Persist (Entity (..), get, getBy, delete, deleteWhere, insert_, selectList, (==.))
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 
 
@@ -24,7 +24,7 @@ insertIngredient backend (Ingredient name voids) =
       Nothing -> do
         insert_ (StoredIngredient name)
         void $ liftIO $ setViolations backend name voids
-      Just _ -> do
+      Just _ ->
         void $ liftIO $ setViolations backend name voids
 
 

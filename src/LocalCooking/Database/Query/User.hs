@@ -1,6 +1,5 @@
 {-# LANGUAGE
     OverloadedStrings
-  , TupleSections
   , DeriveGeneric
   #-}
 
@@ -9,31 +8,24 @@ module LocalCooking.Database.Query.User where
 import LocalCooking.Database.Schema.Facebook.UserDetails
   ( FacebookUserDetails (..), Unique (UniqueFacebookUserId))
 import LocalCooking.Database.Schema.Facebook.AccessToken
-  ( FacebookUserAccessTokenStored (..), Unique ())
+  ( FacebookUserAccessTokenStored (..))
 import LocalCooking.Database.Schema.User
   ( StoredUser (..), EntityField (StoredUserPassword, StoredUserEmail), StoredUserId, Unique (UniqueEmail)
   )
 import LocalCooking.Database.Schema.User.Pending
   ( PendingRegistrationConfirm (..), Unique (UniquePendingRegistration)
   )
-import LocalCooking.Database.Schema.User.Role
-  ( EntityField (UserRoleStoredUserRoleOwner), UserRoleStored (..)
-  )
 import LocalCooking.Semantics.Common (Register (..), Login (..), SocialLogin (..), SocialLoginForm (..))
 import qualified LocalCooking.Semantics.Common as Semantic
 import LocalCooking.Common.User.Password (HashedPassword)
-import LocalCooking.Common.User.Role (UserRole (Customer, Admin))
-import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
 import Data.Aeson.Types (typeMismatch)
-import Data.Maybe (catMaybes)
-import qualified Data.Set as Set
 import Data.Time (getCurrentTime)
-import Control.Monad (forM, forM_, void, when)
+import Control.Monad (void, when)
 import Control.Monad.IO.Class (liftIO)
 import Text.EmailAddress (EmailAddress)
-import Database.Persist (Entity (..), insert, insert_, delete, deleteBy, get, getBy, (=.), update, (==.), selectList)
+import Database.Persist (Entity (..), insert, insert_, delete, get, getBy, (=.), update)
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import GHC.Generics (Generic)
 import Test.QuickCheck (Arbitrary (..), oneof)
