@@ -54,7 +54,7 @@ MealIngredient
     UniqueMealIngredient mealIngredientMeal mealIngredientIngredient
     deriving Eq Show
 
-MealTag
+MealTagRelation
     mealTagMeal StoredMealId
     mealTagMealTag StoredMealTagId
     UniqueMealTag mealTagMeal mealTagMealTag
@@ -70,7 +70,7 @@ StoredMenu
     UniqueMenuDeadline storedMenuAuthor storedMenuDeadline
     deriving Eq Show
 
-MenuTag
+MenuTagRelation
     menuTagMenu StoredMenuId
     menuTagMealTag StoredMealTagId
     UniqueMenuTag menuTagMenu menuTagMealTag
@@ -87,7 +87,7 @@ StoredChef
     UniqueChefPermalink storedChefPermalink
     deriving Eq Show
 
-ChefTag
+ChefTagRelation
     chefTagChef StoredChefId
     chefTagChefTag StoredChefTagId
     UniqueChefTag chefTagChef chefTagChefTag

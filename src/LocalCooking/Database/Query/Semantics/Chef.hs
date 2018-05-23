@@ -9,13 +9,13 @@ import LocalCooking.Database.Query.Tag.Chef (getChefTagId)
 import LocalCooking.Database.Query.Tag.Meal (getMealTagId)
 import LocalCooking.Database.Query.IngredientDiet (getStoredIngredientId)
 import LocalCooking.Database.Schema.Semantics
-  ( StoredChef (..), ChefTag (..)
-  , MealTag (..), MealIngredient (..), StoredMeal (..), StoredMealId
-  , MenuTag (..), StoredMenu (..), StoredMenuId
+  ( StoredChef (..), ChefTagRelation (..)
+  , MealTagRelation (..), MealIngredient (..), StoredMeal (..), StoredMealId
+  , MenuTagRelation (..), StoredMenu (..), StoredMenuId
   , EntityField
-    ( MenuTagMenuTagMenu, MenuTagMenuTagMealTag
+    ( MenuTagRelationMenuTagMenu, MenuTagRelationMenuTagMealTag
     , MealIngredientMealIngredientIngredient, MealIngredientMealIngredientMeal
-    , MealTagMealTagMeal, MealTagMealTagMealTag
+    , MealTagRelationMealTagMeal, MealTagRelationMealTagMealTag
     )
   , Unique (UniqueChefPermalink, UniqueMealPermalink, UniqueMenuDeadline)
   )
@@ -58,7 +58,7 @@ setChef backend owner ChefSettings{..} =
           mId <- liftIO (getChefTagId backend tag)
           case mId of
             Nothing -> pure ()
-            Just tagId -> insert_ (ChefTag chefId tagId)
+            Just tagId -> insert_ (ChefTagRelation chefId tagId)
         pure True
 
 
@@ -82,7 +82,7 @@ setMenu backend owner MenuSettings{..} =
           mTagId <- liftIO (getMealTagId backend tag)
           case mTagId of
             Nothing -> pure ()
-            Just tagId -> insert_ (MenuTag menuId tagId)
+            Just tagId -> insert_ (MenuTagRelation menuId tagId)
         pure menuId
       Just (Entity menuId _) -> do
         replace menuId $ StoredMenu
@@ -93,14 +93,17 @@ setMenu backend owner MenuSettings{..} =
           menuSettingsImages
           owner
         newTags <- fmap catMaybes $ forM menuSettingsTags $ liftIO . getMealTagId backend
-        oldTags <- fmap (fmap (\(Entity _ (MenuTag _ tagId)) -> tagId))
-                 $ selectList [MenuTagMenuTagMenu ==. menuId] []
+        oldTags <- fmap (fmap (\(Entity _ (MenuTagRelation _ tagId)) -> tagId))
+                 $ selectList [MenuTagRelationMenuTagMenu ==. menuId] []
         let toRemove = Set.fromList oldTags `Set.difference` Set.fromList newTags
             toAdd = Set.fromList newTags `Set.difference` Set.fromList oldTags
         forM_ toRemove $ \tagId ->
-          deleteWhere [MenuTagMenuTagMenu ==. menuId, MenuTagMenuTagMealTag ==. tagId]
+          deleteWhere
+            [ MenuTagRelationMenuTagMenu ==. menuId
+            , MenuTagRelationMenuTagMealTag ==. tagId
+            ]
         forM_ toAdd $ \tagId ->
-          insert_ (MenuTag menuId tagId)
+          insert_ (MenuTagRelation menuId tagId)
         pure menuId
 
 
@@ -131,7 +134,7 @@ setMeal backend menuId MealSettings{..} =
           mTagId <- liftIO (getMealTagId backend tag)
           case mTagId of
             Nothing -> pure ()
-            Just tagId -> insert_ (MealTag mealId tagId)
+            Just tagId -> insert_ (MealTagRelation mealId tagId)
         pure mealId
       Just (Entity mealId _) -> do
         replace mealId $ StoredMeal
@@ -157,13 +160,16 @@ setMeal backend menuId MealSettings{..} =
           insert_ (MealIngredient mealId ingId)
 
         newTags <- fmap catMaybes $ forM mealSettingsTags $ liftIO . getMealTagId backend
-        oldTags <- fmap (fmap (\(Entity _ (MealTag _ tagId)) -> tagId))
-                 $ selectList [MealTagMealTagMeal ==. mealId] []
+        oldTags <- fmap (fmap (\(Entity _ (MealTagRelation _ tagId)) -> tagId))
+                 $ selectList [MealTagRelationMealTagMeal ==. mealId] []
         let toRemove = Set.fromList oldTags `Set.difference` Set.fromList newTags
             toAdd = Set.fromList newTags `Set.difference` Set.fromList oldTags
         forM_ toRemove $ \tagId ->
-          deleteWhere [MealTagMealTagMeal ==. mealId, MealTagMealTagMealTag ==. tagId]
+          deleteWhere
+            [ MealTagRelationMealTagMeal ==. mealId
+            , MealTagRelationMealTagMealTag ==. tagId
+            ]
         forM_ toAdd $ \tagId ->
-          insert_ (MealTag mealId tagId)
+          insert_ (MealTagRelation mealId tagId)
 
         pure mealId
