@@ -10,6 +10,7 @@ import LocalCooking.Database.Schema.User (StoredUserId)
 import LocalCooking.Common.User.Password (HashedPassword)
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
+import Data.Time (UTCTime)
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (Object), object, (.=), (.:))
 import Data.Aeson.Types (typeMismatch)
 import Text.EmailAddress (EmailAddress)
@@ -43,6 +44,7 @@ instance FromJSON SocialLoginForm where
 --   while UserDetails dictate the availability of those roles
 data User = User
   { userId             :: StoredUserId
+  , userCreated        :: UTCTime
   , userEmail          :: EmailAddress
   , userPassword       :: HashedPassword
   , userSocial         :: SocialLoginForm
@@ -55,10 +57,12 @@ instance Arbitrary User where
                    <*> arbitrary
                    <*> arbitrary
                    <*> arbitrary
+                   <*> arbitrary
 
 instance ToJSON User where
   toJSON User{..} = object
     [ "id" .= userId
+    , "created" .= userCreated
     , "email" .= userEmail
     , "password" .= userPassword
     , "social" .= userSocial
@@ -68,6 +72,7 @@ instance ToJSON User where
 instance FromJSON User where
   parseJSON json = case json of
     Object o -> User <$> o .: "id"
+                     <*> o .: "created"
                      <*> o .: "email"
                      <*> o .: "password"
                      <*> o .: "social"

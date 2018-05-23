@@ -108,7 +108,7 @@ setMenu backend owner MenuSettings{..} =
             toAdd = Set.fromList newTags `Set.difference` Set.fromList oldTags
         forM_ toRemove $ \tagId ->
           deleteWhere [MenuTagMenuTagMenu ==. menuId, MenuTagMenuTagMealTag ==. tagId]
-        forM_ toAdd $ \tagId -> do
+        forM_ toAdd $ \tagId ->
           insert_ (MenuTag menuId tagId)
         pure menuId
 
