@@ -7,6 +7,7 @@
   , OverloadedStrings
   , StandaloneDeriving
   , MultiParamTypeClasses
+  , PartialTypeSignatures
   , GeneralizedNewtypeDeriving
   #-}
 
@@ -19,9 +20,10 @@ import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
 import Data.Aeson.Types (typeMismatch)
 import Data.Time (UTCTime)
 import Text.EmailAddress (EmailAddress)
-import Database.Persist.Sql (SqlBackend)
-import Database.Persist.Class (PersistEntity (EntityField, Key), PersistCore (BackendKey))
+import Database.Persist.Class (PersistEntity (EntityField))
 import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)
+import Test.QuickCheck (Arbitrary (..))
+import Unsafe.Coerce (unsafeCoerce)
 
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
@@ -33,6 +35,9 @@ StoredUser
     deriving Eq Show
 |]
 
+
+instance Arbitrary StoredUserId where
+  arbitrary = unsafeCoerce <$> (arbitrary :: _ Int)
 
 instance Hashable StoredUserId where
   hashWithSalt salt x = hashWithSalt salt (toJSON x)

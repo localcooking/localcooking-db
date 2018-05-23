@@ -42,7 +42,8 @@ instance FromJSON SocialLoginForm where
 -- | How a user sees themselves, across all apps - i.e. the result of a login. Roles are only visible to Admin,
 --   while UserDetails dictate the availability of those roles
 data User = User
-  { userEmail          :: EmailAddress
+  { userId             :: StoredUserId
+  , userEmail          :: EmailAddress
   , userPassword       :: HashedPassword
   , userSocial         :: SocialLoginForm
   , userEmailConfirmed :: Bool
@@ -53,10 +54,12 @@ instance Arbitrary User where
                    <*> arbitrary
                    <*> arbitrary
                    <*> arbitrary
+                   <*> arbitrary
 
 instance ToJSON User where
   toJSON User{..} = object
-    [ "email" .= userEmail
+    [ "id" .= userId
+    , "email" .= userEmail
     , "password" .= userPassword
     , "social" .= userSocial
     , "emailConfirmed" .= userEmailConfirmed
@@ -64,7 +67,8 @@ instance ToJSON User where
 
 instance FromJSON User where
   parseJSON json = case json of
-    Object o -> User <$> o .: "email"
+    Object o -> User <$> o .: "id"
+                     <*> o .: "email"
                      <*> o .: "password"
                      <*> o .: "social"
                      <*> o .: "emailConfirmed"
