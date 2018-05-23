@@ -13,9 +13,10 @@ import LocalCooking.Common.Tag.Chef (ChefTag)
 import LocalCooking.Common.Tag.Meal (MealTag)
 import LocalCooking.Common.User.Name (Name)
 import LocalCooking.Common.Diet (Diet)
-import LocalCooking.Common.Ingredient (Ingredient)
+import LocalCooking.Common.Ingredient (Ingredient, IngredientName)
 import LocalCooking.Common.Order (OrderProgress)
 
+import Data.Address (USAAddress)
 import Data.Time (UTCTime)
 import Data.Price (Price)
 import Data.Image.Source (ImageSource)
@@ -409,3 +410,34 @@ instance FromJSON Order where
   parseJSON json = case json of
     Object o -> Order <$> o .: "meals" <*> o .: "time"
     _ -> typeMismatch "Order" json
+
+
+
+data Customer = Customer
+  { customerName      :: Name
+  , customerAddress   :: USAAddress
+  , customerDiets     :: [Diet]
+  , customerAllergies :: [IngredientName]
+  } deriving (Eq, Show, Generic)
+
+instance Arbitrary Customer where
+  arbitrary = Customer <$> arbitrary
+                       <*> arbitrary
+                       <*> arbitrary
+                       <*> arbitrary
+
+instance ToJSON Customer where
+  toJSON Customer{..} = object
+    [ "name" .= customerName
+    , "address" .= customerAddress
+    , "diets" .= customerDiets
+    , "allergies" .= customerAllergies
+    ]
+
+instance FromJSON Customer where
+  parseJSON json = case json of
+    Object o -> Customer <$> o .: "name"
+                         <*> o .: "address"
+                         <*> o .: "diets"
+                         <*> o .: "allergies"
+    _ -> typeMismatch "Customer" json
