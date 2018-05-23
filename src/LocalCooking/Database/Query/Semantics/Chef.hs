@@ -9,7 +9,7 @@ import LocalCooking.Database.Query.Tag.Chef (getChefTagId)
 import LocalCooking.Database.Query.Tag.Meal (getMealTagId)
 import LocalCooking.Database.Query.IngredientDiet (getStoredIngredientId)
 import LocalCooking.Database.Schema.Semantics
-  ( StoredChef (..), ChefTagRelation (..)
+  ( StoredChef (..), StoredChefId, ChefTagRelation (..)
   , MealTagRelation (..), MealIngredient (..), StoredMeal (..), StoredMealId
   , MenuTagRelation (..), StoredMenu (..), StoredMenuId
   , EntityField
@@ -63,7 +63,7 @@ setChef backend owner ChefSettings{..} =
 
 
 setMenu :: ConnectionPool
-        -> StoredUserId
+        -> StoredChefId
         -> MenuSettings
         -> IO StoredMenuId
 setMenu backend owner MenuSettings{..} =

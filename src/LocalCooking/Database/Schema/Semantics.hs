@@ -66,7 +66,7 @@ StoredMenu
     storedMenuHeading Text
     storedMenuDescription MarkdownText
     storedMenuImages [ImageSource]
-    storedMenuAuthor StoredUserId
+    storedMenuAuthor StoredChefId
     UniqueMenuDeadline storedMenuAuthor storedMenuDeadline
     deriving Eq Show
 
