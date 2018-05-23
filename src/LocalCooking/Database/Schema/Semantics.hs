@@ -107,6 +107,7 @@ StoredReview
 StoredOrder
     storedOrderCustomer StoredUserId
     storedOrderMeal StoredMealId
+    storedOrderChef StoredChefId
     storedOrderVolume Int
     storedOrderProgress OrderProgress
     storedOrderTime UTCTime
