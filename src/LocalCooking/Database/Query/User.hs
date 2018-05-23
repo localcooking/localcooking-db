@@ -159,7 +159,7 @@ changeSecurityDetails :: ConnectionPool
                       -> Semantic.User
                       -> HashedPassword
                       -> IO Bool
-changeSecurityDetails backend (Semantic.User userId _ email newPassword social conf) password =
+changeSecurityDetails backend (Semantic.User userId _ email newPassword social conf _) password =
   flip runSqlPool backend $ do
     mUser <- get userId
     case mUser of

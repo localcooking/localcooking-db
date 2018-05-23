@@ -8,6 +8,7 @@ module LocalCooking.Semantics.Common where
 
 import LocalCooking.Database.Schema.User (StoredUserId)
 import LocalCooking.Common.User.Password (HashedPassword)
+import LocalCooking.Common.User.Role (UserRole)
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
 import Data.Time (UTCTime)
@@ -49,10 +50,12 @@ data User = User
   , userPassword       :: HashedPassword
   , userSocial         :: SocialLoginForm
   , userEmailConfirmed :: Bool
+  , userRoles          :: [UserRole]
   } deriving (Eq, Show, Generic)
 
 instance Arbitrary User where
   arbitrary = User <$> arbitrary
+                   <*> arbitrary
                    <*> arbitrary
                    <*> arbitrary
                    <*> arbitrary
@@ -67,6 +70,7 @@ instance ToJSON User where
     , "password" .= userPassword
     , "social" .= userSocial
     , "emailConfirmed" .= userEmailConfirmed
+    , "userRoles" .= userRoles
     ]
 
 instance FromJSON User where
@@ -77,6 +81,7 @@ instance FromJSON User where
                      <*> o .: "password"
                      <*> o .: "social"
                      <*> o .: "emailConfirmed"
+                     <*> o .: "userRoles"
     _ -> typeMismatch "User" json
 
 
