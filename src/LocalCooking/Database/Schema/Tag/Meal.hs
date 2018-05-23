@@ -23,6 +23,6 @@ import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkM
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 StoredMealTag
     mealTag MealTag
-    UniqueMealTag mealTag
+    UniqueStoredMealTag mealTag
     deriving Eq Show
 |]

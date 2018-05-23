@@ -11,7 +11,7 @@ import LocalCooking.Database.Schema.Facebook.UserDetails
 import LocalCooking.Database.Schema.Facebook.AccessToken
   ( FacebookUserAccessTokenStored (..), Unique ())
 import LocalCooking.Database.Schema.User
-  ( User (..), EntityField (UserPassword, UserEmail), UserId, Unique (UniqueEmail)
+  ( StoredUser (..), EntityField (StoredUserPassword, StoredUserEmail), StoredUserId, Unique (UniqueEmail)
   )
 import LocalCooking.Database.Schema.User.Pending
   ( PendingRegistrationConfirm (..), Unique (UniquePendingRegistration)
@@ -44,7 +44,7 @@ import Test.QuickCheck (Arbitrary (..), oneof)
 
 registerUser :: ConnectionPool
              -> Register
-             -> IO (Maybe UserId)
+             -> IO (Maybe StoredUserId)
 registerUser backend (Register email password social) = do
   now <- getCurrentTime
   flip runSqlPool backend $ do
@@ -52,7 +52,7 @@ registerUser backend (Register email password social) = do
     case mUserId of
       Just _ -> pure Nothing
       Nothing -> do
-        userId <- insert (User now email password)
+        userId <- insert (StoredUser now email password)
         insert_ (PendingRegistrationConfirm userId)
         liftIO (storeSocialLoginForm backend userId social)
         pure (Just userId)
@@ -78,7 +78,7 @@ confirmEmail backend email =
 
 userIdByEmail :: ConnectionPool
               -> EmailAddress
-              -> IO (Maybe UserId)
+              -> IO (Maybe StoredUserId)
 userIdByEmail backend email =
   flip runSqlPool backend $ do
     mEmailEnt <- getBy (UniqueEmail email)
@@ -88,7 +88,7 @@ userIdByEmail backend email =
 
 
 storeSocialLoginForm :: ConnectionPool
-                     -> UserId
+                     -> StoredUserId
                      -> SocialLoginForm
                      -> IO ()
 storeSocialLoginForm backend userId (SocialLoginForm mFb) =
@@ -128,13 +128,13 @@ instance Arbitrary LoginFailure where
 -- | Doesn't write to database, read-only query
 login :: ConnectionPool
       -> Login
-      -> IO (Either LoginFailure UserId)
+      -> IO (Either LoginFailure StoredUserId)
 login backend (Login email password) =
   flip runSqlPool backend $ do
     mUserEnt <- getBy (UniqueEmail email)
     case mUserEnt of
       Nothing -> pure (Left EmailDoesntExist)
-      Just (Entity owner (User _ _ password'))
+      Just (Entity owner (StoredUser _ _ password'))
         | password == password' -> pure (Right owner)
         | otherwise -> pure (Left BadPassword)
 
@@ -142,7 +142,7 @@ login backend (Login email password) =
 -- | NOTE: Doesn't verify the authenticity of FacebookUserAccessToken, but stores it
 socialLogin :: ConnectionPool
             -> SocialLogin
-            -> IO (Maybe UserId)
+            -> IO (Maybe StoredUserId)
 socialLogin backend social =
   flip runSqlPool backend $
     case social of
@@ -156,7 +156,7 @@ socialLogin backend social =
 
 
 changeSecurityDetails :: ConnectionPool
-                      -> UserId
+                      -> StoredUserId
                       -> Semantic.User
                       -> HashedPassword
                       -> IO Bool
@@ -165,10 +165,10 @@ changeSecurityDetails backend userId (Semantic.User email newPassword social con
     mUser <- get userId
     case mUser of
       Nothing -> pure False
-      Just (User _ _ password')
+      Just (StoredUser _ _ password')
         | password' /= password -> pure False
         | otherwise -> do
-            update userId [UserEmail =. email, UserPassword =. newPassword]
+            update userId [StoredUserEmail =. email, StoredUserPassword =. newPassword]
             liftIO (storeSocialLoginForm backend userId social)
             when conf $
               void $ liftIO $ confirmEmail backend email
@@ -176,7 +176,7 @@ changeSecurityDetails backend userId (Semantic.User email newPassword social con
 
 
 checkPassword :: ConnectionPool
-              -> UserId
+              -> StoredUserId
               -> HashedPassword
               -> IO Bool
 checkPassword backend userId password =
@@ -184,7 +184,7 @@ checkPassword backend userId password =
     mUser <- get userId
     case mUser of
       Nothing -> pure False
-      Just (User _ _ password') -> pure (password == password')
+      Just (StoredUser _ _ password') -> pure (password == password')
 
 
 -- getUsers :: ConnectionPool

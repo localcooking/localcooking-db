@@ -11,7 +11,7 @@
 
 module LocalCooking.Database.Schema.Semantics where
 
-import LocalCooking.Database.Schema.User (UserId)
+import LocalCooking.Database.Schema.User (StoredUserId)
 import LocalCooking.Database.Schema.Tag.Meal (StoredMealTagId)
 import LocalCooking.Database.Schema.Tag.Chef (StoredChefTagId)
 import LocalCooking.Database.Schema.IngredientDiet (StoredIngredientId)
@@ -65,7 +65,7 @@ StoredMenu
     storedMenuHeading Text
     storedMenuDescription MarkdownText
     storedMenuImages [ImageSource]
-    storedMenuAuthor UserId
+    storedMenuAuthor StoredUserId
     UniqueMenuDeadline storedMenuAuthor storedMenuDeadline
     deriving Eq Show
 
@@ -76,7 +76,7 @@ MenuTag
     deriving Eq Show
 
 StoredChef
-    storedChefOwner UserId
+    storedChefOwner StoredUserId
     storedChefName Name
     storedChefPermalink Permalink
     storedChefBio MarkdownText
@@ -103,13 +103,13 @@ StoredReview
     storedReviewId ReviewId
     storedReviewBody MarkdownText
     storedReviewImages [ImageSource]
-    storedReviewAuthor UserId
+    storedReviewAuthor StoredUserId
     UniqueReviewAuthor storedReviewAuthor storedReviewOrder
     UniqueReviewId storedReviewId
     deriving Eq Show
 
 StoredOrder
-    storedOrderCustomer UserId
+    storedOrderCustomer StoredUserId
     storedOrderMeal StoredMealId
     storedOrderVolume Int
     storedOrderProgress OrderProgress

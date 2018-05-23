@@ -10,7 +10,7 @@ module LocalCooking.Database.Query.Semantics.Mitch where
 -- import LocalCooking.Database.Query.Ingredient (getIngredientId, getIngredientById)
 -- import LocalCooking.Database.Query.Tag.Meal (getMealTagId, getMealTagById)
 import LocalCooking.Database.Schema.Semantics (StoredMeal (..), MealIngredient (..), MealTag (..), EntityField (..))
-import LocalCooking.Semantic.Mitch (MealSynopsis (..), Meal (..), Chef (..))
+import LocalCooking.Semantics.Mitch (MealSynopsis (..), Meal (..), Chef (..))
 
 import Data.Text.Permalink (Permalink)
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))

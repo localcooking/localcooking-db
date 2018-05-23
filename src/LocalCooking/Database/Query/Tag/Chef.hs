@@ -1,7 +1,7 @@
 module LocalCooking.Database.Query.Tag.Chef where
 
 import LocalCooking.Database.Schema.Tag.Chef
-  ( StoredChefTag (..), Unique (..), StoredChefTagId )
+  ( StoredChefTag (..), Unique (UniqueStoredChefTag), StoredChefTagId )
 import LocalCooking.Common.Tag.Chef (ChefTag)
 
 import Database.Persist (Entity (..), get, getBy, delete, insert_, selectList)
@@ -21,7 +21,7 @@ deleteChefTag :: ConnectionPool
               -> IO ()
 deleteChefTag backend tag =
   flip runSqlPool backend $ do
-    mEnt <- getBy (UniqueChefTag tag)
+    mEnt <- getBy (UniqueStoredChefTag tag)
     case mEnt of
       Nothing -> pure ()
       Just (Entity k _) -> delete k
@@ -32,7 +32,7 @@ getChefTagId :: ConnectionPool
              -> IO (Maybe StoredChefTagId)
 getChefTagId backend tag =
   flip runSqlPool backend $ do
-    mEnt <- getBy (UniqueChefTag tag)
+    mEnt <- getBy (UniqueStoredChefTag tag)
     pure ((\(Entity k _) -> k) <$> mEnt)
 
 

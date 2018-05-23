@@ -23,6 +23,6 @@ import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkM
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 StoredChefTag
     chefTag ChefTag
-    UniqueChefTag chefTag
+    UniqueStoredChefTag chefTag
     deriving Eq Show
 |]

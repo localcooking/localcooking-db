@@ -33,7 +33,8 @@ StoredUser
     deriving Eq Show
 |]
 
-instance Hashable (Key StoredUser) where
+
+instance Hashable StoredUserId where
   hashWithSalt salt x = hashWithSalt salt (toJSON x)
 
 instance Eq (EntityField StoredUser typ) where
@@ -81,7 +82,7 @@ instance FromJSON (EntityField StoredUser EmailAddress) where
     where
       fail' = typeMismatch "EntityField StoredUser" json
 
-instance FromJSON (EntityField StoredUser (Key StoredUser)) where
+instance FromJSON (EntityField StoredUser StoredUserId) where
   parseJSON json = case json of
     String s
       | s == "storedUserId" -> pure StoredUserId

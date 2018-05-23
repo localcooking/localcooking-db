@@ -1,7 +1,7 @@
 module LocalCooking.Database.Query.Tag.Meal where
 
 import LocalCooking.Database.Schema.Tag.Meal
-  ( StoredMealTag (..), Unique (..), StoredMealTagId )
+  ( StoredMealTag (..), Unique (UniqueStoredMealTag), StoredMealTagId )
 import LocalCooking.Common.Tag.Meal (MealTag)
 
 import Database.Persist (Entity (..), get, getBy, delete, insert_, selectList)
@@ -21,7 +21,7 @@ deleteMealTag :: ConnectionPool
               -> IO ()
 deleteMealTag backend tag =
   flip runSqlPool backend $ do
-    mEnt <- getBy (UniqueMealTag tag)
+    mEnt <- getBy (UniqueStoredMealTag tag)
     case mEnt of
       Nothing -> pure ()
       Just (Entity k _) -> delete k
@@ -32,7 +32,7 @@ getMealTagId :: ConnectionPool
              -> IO (Maybe StoredMealTagId)
 getMealTagId backend tag =
   flip runSqlPool backend $ do
-    mEnt <- getBy (UniqueMealTag tag)
+    mEnt <- getBy (UniqueStoredMealTag tag)
     pure ((\(Entity k _) -> k) <$> mEnt)
 
 

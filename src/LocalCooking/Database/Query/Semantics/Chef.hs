@@ -22,8 +22,8 @@ import LocalCooking.Database.Schema.Semantics
     )
   , Unique (UniqueChefPermalink, UniqueMealPermalink, UniqueMenuDeadline)
   )
-import LocalCooking.Database.Schema.User (UserId)
-import LocalCooking.Semantic.Chef (MealSettings (..), MenuSettings (..), ChefSettings (..))
+import LocalCooking.Database.Schema.User (StoredUserId)
+import LocalCooking.Semantics.Chef (MealSettings (..), MenuSettings (..), ChefSettings (..))
 
 import Data.Text.Permalink (Permalink)
 import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
@@ -47,7 +47,7 @@ import Test.QuickCheck (Arbitrary (..), oneof)
 
 
 setChef :: ConnectionPool
-        -> UserId
+        -> StoredUserId
         -> ChefSettings
         -> IO Bool
 setChef backend owner ChefSettings{..} =
@@ -72,7 +72,7 @@ setChef backend owner ChefSettings{..} =
 
 
 setMenu :: ConnectionPool
-        -> UserId
+        -> StoredUserId
         -> MenuSettings
         -> IO StoredMenuId
 setMenu backend owner MenuSettings{..} =

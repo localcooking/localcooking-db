@@ -6,6 +6,7 @@
 
 module LocalCooking.Semantics.Common where
 
+import LocalCooking.Database.Schema.User (StoredUserId)
 import LocalCooking.Common.User.Password (HashedPassword)
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
@@ -41,8 +42,7 @@ instance FromJSON SocialLoginForm where
 -- | How a user sees themselves, across all apps - i.e. the result of a login. Roles are only visible to Admin,
 --   while UserDetails dictate the availability of those roles
 data User = User
-  { userId             :: StoredUserId
-  , userEmail          :: EmailAddress
+  { userEmail          :: EmailAddress
   , userPassword       :: HashedPassword
   , userSocial         :: SocialLoginForm
   , userEmailConfirmed :: Bool
@@ -50,7 +50,6 @@ data User = User
 
 instance Arbitrary User where
   arbitrary = User <$> arbitrary
-                   <*> arbitrary
                    <*> arbitrary
                    <*> arbitrary
                    <*> arbitrary
