@@ -6,6 +6,7 @@
 
 module LocalCooking.Semantics.Chef where
 
+import LocalCooking.Database.Schema.Semantics (StoredMealId, StoredOrderId)
 import LocalCooking.Common.Tag.Chef (ChefTag)
 import LocalCooking.Common.Tag.Meal (MealTag)
 import LocalCooking.Common.User.Name (Name)
@@ -25,6 +26,7 @@ import Test.QuickCheck (Arbitrary (..))
 import Test.QuickCheck.Instances ()
 
 
+-- unique key is tied to the user who submits it -- StoredUserId is a valid id
 data ChefSettings = ChefSettings
   { chefSettingsName      :: Name
   , chefSettingsPermalink :: Permalink
@@ -64,6 +66,7 @@ instance FromJSON ChefSettings where
     _ -> typeMismatch "ChefSettings" json
 
 
+-- submission with a StoredMealId constitutes an update
 data MealSettings = MealSettings
   { mealSettingsTitle        :: Text
   , mealSettingsPermalink    :: Permalink
@@ -113,6 +116,8 @@ instance FromJSON MealSettings where
                              <*> o .: "price"
     _ -> typeMismatch "MealSettings" json
 
+
+-- submission with a StoredMenuId constitutes an update
 data MenuSettings = MenuSettings
   { menuSettingsPublished   :: Maybe Day -- ^ Special treatment when Just
   , menuSettingsDeadline    :: Day
@@ -150,14 +155,18 @@ instance FromJSON MenuSettings where
                              <*> o .: "images"
     _ -> typeMismatch "MenuSettings" json
 
+
+-- Only updates are submitted - update order progress.
 data Order = Order
-  { orderMeal     :: Permalink
+  { orderMeal     :: StoredMealId
   , orderProgress :: OrderProgress
   , orderVolume   :: Int
+  , orderId       :: StoredOrderId
   } deriving (Eq, Show, Generic)
 
 instance Arbitrary Order where
   arbitrary = Order <$> arbitrary
+                    <*> arbitrary
                     <*> arbitrary
                     <*> arbitrary
 
@@ -166,6 +175,7 @@ instance ToJSON Order where
     [ "meal" .= orderMeal
     , "progress" .= orderProgress
     , "volume" .= orderVolume
+    , "id" .= orderId
     ]
 
 instance FromJSON Order where
@@ -173,4 +183,5 @@ instance FromJSON Order where
     Object o -> Order <$> o .: "meal"
                       <*> o .: "progress"
                       <*> o .: "volume"
+                      <*> o .: "id"
     _ -> typeMismatch "Order" json

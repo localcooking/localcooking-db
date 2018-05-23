@@ -119,7 +119,7 @@ setMeal :: ConnectionPool
         -> IO StoredMealId
 setMeal backend menuId MealSettings{..} =
   flip runSqlPool backend $ do
-    mEnt <- getBy (UniqueMealPermalink mealSettingsPermalink)
+    mEnt <- getBy (UniqueMealPermalink menuId mealSettingsPermalink)
     case mEnt of
       Nothing -> do
         mealId <- insert $ StoredMeal

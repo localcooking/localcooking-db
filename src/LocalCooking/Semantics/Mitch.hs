@@ -7,6 +7,7 @@
 
 module LocalCooking.Semantics.Mitch where
 
+import LocalCooking.Database.Schema.Semantics (StoredReviewId)
 import LocalCooking.Common.Rating (Rating)
 import LocalCooking.Common.Tag.Chef (ChefTag)
 import LocalCooking.Common.Tag.Meal (MealTag)
@@ -34,23 +35,13 @@ import Test.QuickCheck.Instances ()
 
 -- * Reviews
 
--- | Global enumerator identifier for review permalinks - store in database globally
--- as nonce counter
-newtype ReviewId = ReviewId
-  { getReviewId :: Int
-  } deriving (Eq, Ord, Show, PersistField, PersistFieldSql, Hashable, Generic, ToJSON, FromJSON)
-
-instance Arbitrary ReviewId where
-  arbitrary = ReviewId <$> arbitrary
-
-
 -- | Note that this is from the customers' public perspectives - in the Chef interface,
 -- reviews will have additional user and order identifiers for Chef customer satisfaction
 -- management
 data ReviewSynopsis = ReviewSynopsis
   { reviewSynopsisRating  :: Rating
   , reviewSynopsisHeading :: Text
-  , reviewSynopsisId      :: ReviewId -- ^ Backlink for clicking
+  , reviewSynopsisId      :: StoredReviewId -- ^ Backlink for clicking
   } deriving (Eq, Show, Generic)
 
 instance Arbitrary ReviewSynopsis where
@@ -77,7 +68,7 @@ data Review = Review
   { reviewRating    :: Rating
   , reviewSubmitted :: UTCTime
   , reviewHeading   :: Text
-  , reviewId        :: ReviewId -- ^ Backlink for HREF
+  , reviewId        :: StoredReviewId -- ^ Backlink for HREF
   , reviewBody      :: MarkdownText
   , reviewImages    :: [ImageSource] -- ^ Evidence images uploaded by customer
   } deriving (Eq, Show, Generic)
