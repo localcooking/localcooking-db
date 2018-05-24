@@ -95,6 +95,8 @@ ChefTagRelation
 
 StoredReview
     storedReviewOrder StoredOrderId
+    storedReviewChef StoredChefId
+    storedReviewMeal StoredMealId
     storedReviewRating Rating
     storedReviewSubmitted UTCTime
     storedReviewHeading Text
