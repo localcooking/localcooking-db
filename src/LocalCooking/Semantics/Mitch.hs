@@ -2,6 +2,7 @@
     OverloadedStrings
   , RecordWildCards
   , DeriveGeneric
+  , NamedFieldPuns
   #-}
 
 module LocalCooking.Semantics.Mitch where
@@ -59,6 +60,14 @@ instance FromJSON ReviewSynopsis where
                                <*> o .: "heading"
                                <*> o .: "id"
     _ -> typeMismatch "ReviewSynopsis" json
+
+
+getReviewSynopsis :: Review -> ReviewSynopsis
+getReviewSynopsis Review{reviewRating,reviewHeading,reviewId} = ReviewSynopsis
+  { reviewSynopsisRating = reviewRating
+  , reviewSynopsisId = reviewId
+  , reviewSynopsisHeading = reviewHeading
+  }
 
 
 data Review = Review
