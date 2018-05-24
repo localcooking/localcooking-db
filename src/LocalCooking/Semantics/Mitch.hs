@@ -401,21 +401,26 @@ data Order = Order
   { orderMeal     :: MealSynopsis
   , orderProgress :: OrderProgress
   , orderTime     :: UTCTime
+  , orderVolume   :: Int
   } deriving (Eq, Show, Generic)
 
 instance Arbitrary Order where
-  arbitrary = Order <$> arbitrary <*> arbitrary <*> arbitrary
+  arbitrary = Order <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
 
 instance ToJSON Order where
   toJSON Order{..} = object
     [ "meal" .= orderMeal
     , "progress" .= orderProgress
     , "time" .= orderTime
+    , "volume" .= orderVolume
     ]
 
 instance FromJSON Order where
   parseJSON json = case json of
-    Object o -> Order <$> o .: "meal" <*> o .: "progress" <*> o .: "time"
+    Object o -> Order <$> o .: "meal"
+                      <*> o .: "progress"
+                      <*> o .: "time"
+                      <*> o .: "volume"
     _ -> typeMismatch "Order" json
 
 
