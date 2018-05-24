@@ -81,6 +81,17 @@ getIngredientById backend ingId =
         voids <- liftIO (getIngredientViolations backend ingId)
         pure $ Just $ Ingredient name voids
 
+
+getIngredientByName :: ConnectionPool
+                    -> IngredientName
+                    -> IO (Maybe Ingredient)
+getIngredientByName backend ingName = do
+  mIngId <- getStoredIngredientId backend ingName
+  case mIngId of
+    Nothing -> pure Nothing
+    Just ingId -> getIngredientById backend ingId
+
+
 getIngredients :: ConnectionPool
                -> IO [Ingredient]
 getIngredients backend =
