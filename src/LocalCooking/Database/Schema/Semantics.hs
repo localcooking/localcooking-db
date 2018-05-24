@@ -135,3 +135,17 @@ instance Arbitrary StoredMealId where
 
 instance Hashable StoredMealId where
   hashWithSalt s x = hashWithSalt s (encode x)
+
+
+instance Arbitrary StoredChefId where
+  arbitrary = unsafeCoerce <$> (arbitrary :: _ Int)
+
+instance Hashable StoredChefId where
+  hashWithSalt s x = hashWithSalt s (encode x)
+
+
+instance Arbitrary StoredMenuId where
+  arbitrary = unsafeCoerce <$> (arbitrary :: _ Int)
+
+instance Hashable StoredMenuId where
+  hashWithSalt s x = hashWithSalt s (encode x)
