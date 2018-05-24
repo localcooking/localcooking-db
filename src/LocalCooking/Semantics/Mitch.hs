@@ -398,22 +398,24 @@ instance FromJSON Chef where
 
 
 data Order = Order
-  { orderMeals :: [(MealSynopsis, OrderProgress)]
-  , orderTime  :: UTCTime
+  { orderMeal     :: MealSynopsis
+  , orderProgress :: OrderProgress
+  , orderTime     :: UTCTime
   } deriving (Eq, Show, Generic)
 
 instance Arbitrary Order where
-  arbitrary = Order <$> arbitrary <*> arbitrary
+  arbitrary = Order <$> arbitrary <*> arbitrary <*> arbitrary
 
 instance ToJSON Order where
   toJSON Order{..} = object
-    [ "meals" .= orderMeals
+    [ "meal" .= orderMeal
+    , "progress" .= orderProgress
     , "time" .= orderTime
     ]
 
 instance FromJSON Order where
   parseJSON json = case json of
-    Object o -> Order <$> o .: "meals" <*> o .: "time"
+    Object o -> Order <$> o .: "meal" <*> o .: "progress" <*> o .: "time"
     _ -> typeMismatch "Order" json
 
 
