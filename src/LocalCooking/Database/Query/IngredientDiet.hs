@@ -59,6 +59,16 @@ getIngredientNameById backend ingId =
   fmap (\(StoredIngredient t) -> t) <$> runSqlPool (get ingId) backend
 
 
+getIngredientViolations :: ConnectionPool
+                        -> StoredIngredientId
+                        -> IO [Diet]
+getIngredientViolations backend ingId =
+  flip runSqlPool backend $ do
+    xs <- selectList [IngredientDietViolationIngredientViolator ==. ingId] []
+    fmap catMaybes $ forM xs $ \(Entity _ (IngredientDietViolation _ d)) ->
+      liftIO (getDietById backend d)
+
+
 getIngredientById :: ConnectionPool
                   -> StoredIngredientId
                   -> IO (Maybe Ingredient)
@@ -68,9 +78,7 @@ getIngredientById backend ingId =
     case mName of
       Nothing -> pure Nothing
       Just name -> do
-        xs <- selectList [IngredientDietViolationIngredientViolator ==. ingId] []
-        voids <- fmap catMaybes $ forM xs $ \(Entity _ (IngredientDietViolation _ d)) ->
-          liftIO (getDietById backend d)
+        voids <- liftIO (getIngredientViolations backend ingId)
         pure $ Just $ Ingredient name voids
 
 getIngredients :: ConnectionPool
