@@ -114,6 +114,16 @@ StoredOrder
     storedOrderVolume Int
     storedOrderProgress OrderProgress
     storedOrderTime UTCTime
+    deriving Eq Show
+
+
+CartRelation
+    cartRelationCustomer StoredUserId
+    cartRelationMeal StoredMealId
+    cartRelationVolume Int
+    cartRelationAdded UTCTime
+    UniqueCartRelation cartRelationCustomer cartRelationMeal
+    deriving Eq Show
 |]
 
 
