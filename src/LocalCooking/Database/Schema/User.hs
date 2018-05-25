@@ -31,6 +31,7 @@ StoredUser
     created UTCTime
     email EmailAddress
     password HashedPassword
+    confirmed Bool
     UniqueEmail email
     deriving Eq Show
 |]
@@ -50,6 +51,8 @@ instance Eq (EntityField StoredUser typ) where
       StoredUserPassword -> True
     StoredUserEmail -> case y of
       StoredUserEmail -> True
+    StoredUserConfirmed -> case y of
+      StoredUserConfirmed -> True
     StoredUserId -> case y of
       StoredUserId -> True
 
@@ -58,6 +61,7 @@ instance ToJSON (EntityField StoredUser typ) where
     StoredUserCreated -> String "created"
     StoredUserPassword -> String "password"
     StoredUserEmail -> String "email"
+    StoredUserConfirmed -> String "confirmed"
     StoredUserId -> String "storedUserId"
 
 instance FromJSON (EntityField StoredUser UTCTime) where
@@ -82,6 +86,15 @@ instance FromJSON (EntityField StoredUser EmailAddress) where
   parseJSON json = case json of
     String s
       | s == "email" -> pure StoredUserEmail
+      | otherwise -> fail'
+    _ -> fail'
+    where
+      fail' = typeMismatch "EntityField StoredUser" json
+
+instance FromJSON (EntityField StoredUser Bool) where
+  parseJSON json = case json of
+    String s
+      | s == "confirmed" -> pure StoredUserConfirmed
       | otherwise -> fail'
     _ -> fail'
     where
