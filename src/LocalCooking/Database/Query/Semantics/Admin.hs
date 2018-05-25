@@ -1,13 +1,10 @@
 {-# LANGUAGE
     OverloadedStrings
   , TupleSections
-  , DeriveGeneric
-  , RecordWildCards
   #-}
 
 module LocalCooking.Database.Query.Semantics.Admin where
 
--- import LocalCooking.Database.Query.Ingredient (getIngredientId, getIngredientById)
 import LocalCooking.Database.Schema.User (StoredUserId)
 import LocalCooking.Database.Schema.User.Role (UserRoleStored (..), EntityField (UserRoleStoredUserRoleOwner), Unique (UniqueUserRole))
 import LocalCooking.Common.User.Role (UserRole)
