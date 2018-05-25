@@ -57,3 +57,4 @@ tests:
     - aeson
     - tasty
     - tasty-hunit
+    - tasty-quickcheck

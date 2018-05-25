@@ -1,33 +1,39 @@
-import LocalCooking.Database.Schema.User.Password (EntityField (UserPassword, UserId))
-import LocalCooking.Database.Schema.User.Email (EntityField (EmailAddressStoredEmailAddress, EmailAddressStoredEmailAddressOwner, EmailAddressStoredId))
-import LocalCooking.Database.Schema.User.Pending (EntityField (PendingRegistrationConfirmPendingRegister, PendingRegistrationConfirmId))
-import LocalCooking.Database.Schema.User.Role (EntityField (UserRoleStoredUserRole, UserRoleStoredUserRoleOwner, UserRoleStoredId))
+{-# LANGUAGE
+    ScopedTypeVariables
+  #-}
+
+import LocalCooking.Database.Schema.User
+  (EntityField (StoredUserPassword, StoredUserEmail, StoredUserId))
+import LocalCooking.Database.Schema.User.Pending
+  (EntityField (PendingRegistrationConfirmPendingRegister, PendingRegistrationConfirmId))
+import LocalCooking.Database.Schema.User.Role
+  (EntityField (UserRoleStoredUserRole, UserRoleStoredUserRoleOwner, UserRoleStoredId))
 import LocalCooking.Database.Schema.Facebook.AccessToken (EntityField (FacebookUserAccessTokenStoredFacebookUserAccessToken, FacebookUserAccessTokenStoredFacebookUserDetails, FacebookUserAccessTokenStoredId))
 import LocalCooking.Database.Schema.Facebook.UserDetails (EntityField (FacebookUserDetailsFacebookUserId, FacebookUserDetailsFacebookUserOwner, FacebookUserDetailsId))
 import LocalCooking.Database.Schema.Salt (EntityField (PasswordSaltPasswordSalt, PasswordSaltId))
 
+import qualified LocalCooking.Semantics.Mitch as Mitch
+import qualified LocalCooking.Semantics.Chef as Chef
+import qualified LocalCooking.Semantics.Admin as Admin
+import qualified LocalCooking.Semantics.Common as Common
+
 import Test.Tasty (defaultMain, testGroup)
 import Test.Tasty.HUnit (assertBool, testCase)
+import Test.Tasty.QuickCheck (testProperty)
 import Data.Aeson (FromJSON, ToJSON)
 import qualified Data.Aeson as Aeson
 
 
 main :: IO ()
 main = defaultMain $ testGroup "Database Tests"
-  [ testGroup "Fields Json"
+  [ testGroup "Fields JSON"
     [ testGroup "User.Password"
       [ testCase "UserPassword" $
-        assertBool "UserPassword" (jsonIso UserPassword)
+        assertBool "UserPassword" (jsonIso StoredUserPassword)
+      , testCase "UserEmail" $
+        assertBool "UserEmail" (jsonIso StoredUserEmail)
       , testCase "UserId" $
-        assertBool "UserId" (jsonIso UserId)
-      ]
-    , testGroup "User.Email"
-      [ testCase "EmailAddress" $
-        assertBool "EmailAddress" (jsonIso EmailAddressStoredEmailAddress)
-      , testCase "EmailAddressOwner" $
-        assertBool "EmailAddressOwner" (jsonIso EmailAddressStoredEmailAddressOwner)
-      , testCase "EmailAddressStoredId" $
-        assertBool "EmailAddressStoredId" (jsonIso EmailAddressStoredId)
+        assertBool "UserId" (jsonIso StoredUserId)
       ]
     , testGroup "User.Pending"
       [ testCase "PendingRegister" $
@@ -66,6 +72,38 @@ main = defaultMain $ testGroup "Database Tests"
         assertBool "PasswordSaltId" (jsonIso PasswordSaltId)
       ]
     ]
+  , testGroup "Semantics JSON"
+    [ testProperty "LocalCooking.Semantic.Mitch.ReviewSynopsis"
+      (\(x :: Mitch.ReviewSynopsis) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Mitch.Review"
+      (\(x :: Mitch.Review) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Mitch.MealSynopsis"
+      (\(x :: Mitch.MealSynopsis) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Mitch.Meal"
+      (\(x :: Mitch.Meal) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Mitch.ChefSynopsis"
+      (\(x :: Mitch.ChefSynopsis) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Mitch.Chef"
+      (\(x :: Mitch.Chef) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Mitch.MenuSynopsis"
+      (\(x :: Mitch.MenuSynopsis) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Mitch.Menu"
+      (\(x :: Mitch.Menu) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Mitch.Order"
+      (\(x :: Mitch.Order) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Mitch.Customer"
+      (\(x :: Mitch.Customer) -> jsonIso x)
+
+    , testProperty "LocalCooking.Semantic.Chef.MealSettings"
+      (\(x :: Chef.MealSettings) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Chef.ChefSettings"
+      (\(x :: Chef.ChefSettings) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Chef.MenuSettings"
+      (\(x :: Chef.MenuSettings) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Chef.Order"
+      (\(x :: Chef.Order) -> jsonIso x)
+    ]
+
   ]
 
 
