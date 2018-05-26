@@ -9,7 +9,7 @@ module LocalCooking.Semantics.Common where
 import LocalCooking.Database.Schema.User (StoredUserId)
 import LocalCooking.Common.User.Password (HashedPassword)
 import LocalCooking.Common.User.Role (UserRole)
-import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
+import Facebook.Types (FacebookLoginCode, FacebookUserId)
 
 import Data.Time (UTCTime)
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (Object), object, (.=), (.:))
@@ -136,28 +136,24 @@ instance FromJSON Login where
 
 data SocialLogin
   = SocialLoginFB
-    { socialLoginFBUserId :: FacebookUserId
-    , socialLoginFBToken  :: FacebookUserAccessToken
+    { socialLoginFBCode :: FacebookLoginCode
     }
   deriving (Eq, Show, Generic)
 
 instance Arbitrary SocialLogin where
   arbitrary = oneof
     [ SocialLoginFB <$> arbitrary
-                    <*> arbitrary
     ]
 
 instance ToJSON SocialLogin where
   toJSON x = case x of
     SocialLoginFB{..} -> object
-      [ "fbUserId" .= socialLoginFBUserId
-      , "fbToken" .= socialLoginFBToken
+      [ "fbCode" .= socialLoginFBCode
       ]
 
 instance FromJSON SocialLogin where
   parseJSON json = case json of
     Object o ->
-      let fb = SocialLoginFB <$> o .: "fbUserId"
-                             <*> o .: "fbToken"
+      let fb = SocialLoginFB <$> o .: "fbCode"
       in  fb
     _ -> typeMismatch "SocialLogin" json
