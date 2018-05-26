@@ -10,6 +10,7 @@ import LocalCooking.Database.Schema.User (StoredUserId)
 import LocalCooking.Common.User.Password (HashedPassword)
 import LocalCooking.Common.User.Role (UserRole)
 import Facebook.Types (FacebookLoginCode, FacebookUserId)
+import Google.Keys (ReCaptchaResponse)
 
 import Data.Time (UTCTime)
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (Object), object, (.=), (.:))
@@ -87,13 +88,15 @@ instance FromJSON User where
 
 
 data Register = Register
-  { registerEmail    :: EmailAddress
-  , registerPassword :: HashedPassword
-  , registerSocial   :: SocialLoginForm
+  { registerEmail     :: EmailAddress
+  , registerPassword  :: HashedPassword
+  , registerSocial    :: SocialLoginForm
+  , registerReCaptcha :: ReCaptchaResponse
   } deriving (Eq, Show, Generic)
 
 instance Arbitrary Register where
   arbitrary = Register <$> arbitrary
+                       <*> arbitrary
                        <*> arbitrary
                        <*> arbitrary
 
@@ -102,13 +105,15 @@ instance ToJSON Register where
     [ "email" .= registerEmail
     , "password" .= registerPassword
     , "social" .= registerSocial
+    , "reCaptcha" .= registerReCaptcha
     ]
 
 instance FromJSON Register where
   parseJSON json = case json of
     Object o -> Register <$> o .: "email"
-                          <*> o .: "password"
-                          <*> o .: "social"
+                         <*> o .: "password"
+                         <*> o .: "social"
+                         <*> o .: "reCaptcha"
     _ -> typeMismatch "Register" json
 
 

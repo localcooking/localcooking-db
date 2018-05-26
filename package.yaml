@@ -27,6 +27,7 @@ dependencies:
 - localcooking-fb
 - localcooking-shared
 - aeson
+- attoparsec-uri
 - bytestring
 - containers
 - emailaddress >= 0.2.0.1
@@ -38,6 +39,7 @@ dependencies:
 - quickcheck-instances
 - resourcet
 - saltine
+- strict
 - text
 - time
 
