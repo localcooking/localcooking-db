@@ -23,6 +23,10 @@ data IsUniqueMenuDeadline = IsUniqueMenuDeadline
   , uniqueMenuDeadlineDeadline :: Day
   } deriving (Eq, Show, Generic)
 
+uncurryUniqueMenuDeadline :: (Permalink -> Day -> a) -> IsUniqueMenuDeadline -> a
+uncurryUniqueMenuDeadline f (IsUniqueMenuDeadline a b) = f a b
+
+
 instance Arbitrary IsUniqueMenuDeadline where
   arbitrary = IsUniqueMenuDeadline <$> arbitrary <*> arbitrary
 
@@ -43,6 +47,9 @@ data IsUniqueMealPermalink = IsUniqueMealPermalink
   , uniqueMealPermalinkDeadline :: Day
   , uniqueMealPermalinkMeal :: Permalink
   } deriving (Eq, Show, Generic)
+
+uncurryUniqueMealPermalink :: (Permalink -> Day -> Permalink -> a) -> IsUniqueMealPermalink -> a
+uncurryUniqueMealPermalink f (IsUniqueMealPermalink a b c) = f a b c
 
 instance Arbitrary IsUniqueMealPermalink where
   arbitrary = IsUniqueMealPermalink <$> arbitrary <*> arbitrary <*> arbitrary
