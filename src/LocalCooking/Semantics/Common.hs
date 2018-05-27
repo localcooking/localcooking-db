@@ -48,7 +48,6 @@ data User = User
   { userId             :: StoredUserId
   , userCreated        :: UTCTime
   , userEmail          :: EmailAddress
-  , userPassword       :: HashedPassword
   , userSocial         :: SocialLoginForm
   , userEmailConfirmed :: Bool
   , userRoles          :: [UserRole]
@@ -61,14 +60,12 @@ instance Arbitrary User where
                    <*> arbitrary
                    <*> arbitrary
                    <*> arbitrary
-                   <*> arbitrary
 
 instance ToJSON User where
   toJSON User{..} = object
     [ "id" .= userId
     , "created" .= userCreated
     , "email" .= userEmail
-    , "password" .= userPassword
     , "social" .= userSocial
     , "emailConfirmed" .= userEmailConfirmed
     , "userRoles" .= userRoles
@@ -79,7 +76,6 @@ instance FromJSON User where
     Object o -> User <$> o .: "id"
                      <*> o .: "created"
                      <*> o .: "email"
-                     <*> o .: "password"
                      <*> o .: "social"
                      <*> o .: "emailConfirmed"
                      <*> o .: "userRoles"
