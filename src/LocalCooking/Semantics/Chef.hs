@@ -18,6 +18,7 @@ import Data.Image.Source (ImageSource)
 import Data.Text (Text)
 import Data.Text.Permalink (Permalink)
 import Data.Text.Markdown (MarkdownText)
+import Data.Time (UTCTime)
 import Data.Time.Calendar (Day)
 import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object), (.=), object, (.:))
 import Data.Aeson.Types (typeMismatch)
@@ -156,16 +157,19 @@ instance FromJSON MenuSettings where
     _ -> typeMismatch "MenuSettings" json
 
 
+-- TODO FIXME order timestamp?
 -- Only updates are submitted - update order progress.
 data Order = Order
   { orderMeal     :: StoredMealId
   , orderProgress :: OrderProgress
   , orderVolume   :: Int
   , orderId       :: StoredOrderId
+  , orderTime     :: UTCTime
   } deriving (Eq, Show, Generic)
 
 instance Arbitrary Order where
   arbitrary = Order <$> arbitrary
+                    <*> arbitrary
                     <*> arbitrary
                     <*> arbitrary
                     <*> arbitrary
@@ -176,6 +180,7 @@ instance ToJSON Order where
     , "progress" .= orderProgress
     , "volume" .= orderVolume
     , "id" .= orderId
+    , "time" .= orderTime
     ]
 
 instance FromJSON Order where
@@ -184,4 +189,5 @@ instance FromJSON Order where
                       <*> o .: "progress"
                       <*> o .: "volume"
                       <*> o .: "id"
+                      <*> o .: "time"
     _ -> typeMismatch "Order" json
