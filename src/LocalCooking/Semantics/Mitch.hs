@@ -7,7 +7,7 @@
 
 module LocalCooking.Semantics.Mitch where
 
-import LocalCooking.Database.Schema.Semantics (StoredReviewId)
+import LocalCooking.Database.Schema.Semantics (StoredReviewId, StoredMealId)
 import LocalCooking.Common.Rating (Rating)
 import LocalCooking.Common.Tag.Chef (ChefTag)
 import LocalCooking.Common.Tag.Meal (MealTag)
@@ -453,3 +453,30 @@ instance FromJSON Customer where
                          <*> o .: "diets"
                          <*> o .: "allergies"
     _ -> typeMismatch "Customer" json
+
+
+
+data CartEntry = CartEntry
+  { cartEntryMeal   :: StoredMealId
+  , cartEntryVolume :: Int
+  , cartEntryAdded  :: UTCTime
+  } deriving (Eq, Show, Generic)
+
+instance Arbitrary CartEntry where
+  arbitrary = CartEntry <$> arbitrary
+                        <*> arbitrary
+                        <*> arbitrary
+
+instance ToJSON CartEntry where
+  toJSON CartEntry{..} = object
+    [ "meal" .= cartEntryMeal
+    , "volume" .= cartEntryVolume
+    , "added" .= cartEntryAdded
+    ]
+
+instance FromJSON CartEntry where
+  parseJSON json = case json of
+    Object o -> CartEntry <$> o .: "meal"
+                          <*> o .: "volume"
+                          <*> o .: "added"
+    _ -> typeMismatch "CartEntry" json
