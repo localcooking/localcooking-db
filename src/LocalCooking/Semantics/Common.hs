@@ -137,7 +137,7 @@ instance FromJSON Login where
 
 data SocialLogin
   = SocialLoginFB
-    { socialLoginFBCode :: FacebookLoginCode
+    { socialLoginFB :: FacebookLoginCode
     }
   deriving (Eq, Show, Generic)
 
@@ -149,12 +149,10 @@ instance Arbitrary SocialLogin where
 instance ToJSON SocialLogin where
   toJSON x = case x of
     SocialLoginFB{..} -> object
-      [ "fbCode" .= socialLoginFBCode
+      [ "fb" .= socialLoginFB
       ]
 
 instance FromJSON SocialLogin where
   parseJSON json = case json of
-    Object o ->
-      let fb = SocialLoginFB <$> o .: "fbCode"
-      in  fb
+    Object o -> SocialLoginFB <$> o .: "fb"
     _ -> typeMismatch "SocialLogin" json
