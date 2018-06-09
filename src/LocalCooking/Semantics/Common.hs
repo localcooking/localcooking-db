@@ -72,7 +72,7 @@ instance ToJSON User where
     , "email" .= userEmail
     , "social" .= userSocial
     , "emailConfirmed" .= userEmailConfirmed
-    , "userRoles" .= userRoles
+    , "roles" .= userRoles
     ]
 
 instance FromJSON User where
@@ -82,7 +82,7 @@ instance FromJSON User where
                      <*> o .: "email"
                      <*> o .: "social"
                      <*> o .: "emailConfirmed"
-                     <*> o .: "userRoles"
+                     <*> o .: "roles"
     _ -> typeMismatch "User" json
 
 
@@ -154,17 +154,20 @@ instance FromJSON RegisterError where
 data ConfirmEmailError
   = ConfirmEmailTokenNonexistent
   | ConfirmEmailUserNonexistent
+  | ConfirmEmailOk
 
 instance Arbitrary ConfirmEmailError where
   arbitrary = oneof
     [ pure ConfirmEmailTokenNonexistent
     , pure ConfirmEmailUserNonexistent
+    , pure ConfirmEmailOk
     ]
 
 instance ToJSON ConfirmEmailError where
   toJSON x = case x of
     ConfirmEmailTokenNonexistent -> String "tokenNonexistent"
     ConfirmEmailUserNonexistent -> String "userNonexistent"
+    ConfirmEmailOk -> String "ok"
 
 
 instance FromJSON ConfirmEmailError where
@@ -172,6 +175,7 @@ instance FromJSON ConfirmEmailError where
     String s
       | s == "tokenNonexistent" -> pure ConfirmEmailTokenNonexistent
       | s == "userNonexistent" -> pure ConfirmEmailUserNonexistent
+      | s == "ok"              -> pure ConfirmEmailOk
       | otherwise             -> fail'
     _ -> fail'
     where
