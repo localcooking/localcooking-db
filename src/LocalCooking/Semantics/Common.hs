@@ -13,12 +13,16 @@ import Facebook.Types (FacebookLoginCode, FacebookUserId)
 import Google.Keys (ReCaptchaResponse)
 
 import Data.Time (UTCTime)
-import Data.Aeson (FromJSON (..), ToJSON (..), Value (Object), object, (.=), (.:))
+import Data.Aeson (FromJSON (..), ToJSON (..), Value (String, Object), object, (.=), (.:))
 import Data.Aeson.Types (typeMismatch)
+import qualified Data.ByteString.Lazy as LBS
+import qualified Data.Text.Lazy.Encoding as LT
+import Control.Applicative ((<|>))
 import Text.EmailAddress (EmailAddress)
 import GHC.Generics (Generic)
 import Test.QuickCheck (Arbitrary (..))
 import Test.QuickCheck.Gen (oneof)
+import Test.QuickCheck.Instances ()
 
 
 
@@ -111,6 +115,41 @@ instance FromJSON Register where
                          <*> o .: "social"
                          <*> o .: "reCaptcha"
     _ -> typeMismatch "Register" json
+
+
+data RegisterError
+  = RegisterDecodingError LBS.ByteString
+  | RegisterReCaptchaFailure LBS.ByteString
+  | RegisterEmailTaken
+  deriving (Eq, Show, Generic)
+
+instance Arbitrary RegisterError where
+  arbitrary = oneof
+    [ RegisterDecodingError . LT.encodeUtf8 <$> arbitrary
+    , RegisterReCaptchaFailure . LT.encodeUtf8 <$> arbitrary
+    , pure RegisterEmailTaken
+    ]
+
+instance ToJSON RegisterError where
+  toJSON x = case x of
+    RegisterDecodingError e -> object ["decodingError" .= LT.decodeUtf8 e]
+    RegisterReCaptchaFailure e -> object ["reCaptchaFailure" .= LT.decodeUtf8 e]
+    RegisterEmailTaken -> String "emailTaken"
+
+
+instance FromJSON RegisterError where
+  parseJSON json = case json of
+    Object o -> do
+      let decodingError = RegisterDecodingError . LT.encodeUtf8 <$> o .: "decodingError"
+          reCaptchaFailure = RegisterReCaptchaFailure . LT.encodeUtf8 <$> o .: "reCaptchaFailure"
+      decodingError <|> reCaptchaFailure
+    String s
+      | s == "emailTaken" -> pure RegisterEmailTaken
+      | otherwise         -> fail'
+    _ -> fail'
+    where
+      fail' = typeMismatch "Register" json
+
 
 
 data Login = Login
