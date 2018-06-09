@@ -4,8 +4,6 @@
 
 import LocalCooking.Database.Schema.User
   (EntityField (StoredUserPassword, StoredUserEmail, StoredUserId))
--- import LocalCooking.Database.Schema.User.Pending
---   (EntityField (PendingRegistrationConfirmPendingRegister, PendingRegistrationConfirmId))
 import LocalCooking.Database.Schema.User.Role
   (EntityField (UserRoleStoredUserRole, UserRoleStoredUserRoleOwner, UserRoleStoredId))
 import LocalCooking.Database.Schema.Facebook.AccessToken (EntityField (FacebookUserAccessTokenStoredFacebookUserAccessToken, FacebookUserAccessTokenStoredFacebookUserDetails, FacebookUserAccessTokenStoredId))
@@ -34,12 +32,6 @@ main = defaultMain $ testGroup "Database Tests"
       , testCase "UserId" $
         assertBool "UserId" (jsonIso StoredUserId)
       ]
-    -- , testGroup "User.Pending"
-    --   [ testCase "PendingRegister" $
-    --     assertBool "PendingRegister" (jsonIso PendingRegistrationConfirmPendingRegister)
-    --   , testCase "PendingRegistrationConfirmId" $
-    --     assertBool "PendingRegistrationConfirmId" (jsonIso PendingRegistrationConfirmId)
-    --   ]
     , testGroup "User.Role"
       [ testCase "UserRole" $
         assertBool "UserRole" (jsonIso UserRoleStoredUserRole)
