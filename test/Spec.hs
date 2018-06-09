@@ -4,8 +4,8 @@
 
 import LocalCooking.Database.Schema.User
   (EntityField (StoredUserPassword, StoredUserEmail, StoredUserId))
-import LocalCooking.Database.Schema.User.Pending
-  (EntityField (PendingRegistrationConfirmPendingRegister, PendingRegistrationConfirmId))
+-- import LocalCooking.Database.Schema.User.Pending
+--   (EntityField (PendingRegistrationConfirmPendingRegister, PendingRegistrationConfirmId))
 import LocalCooking.Database.Schema.User.Role
   (EntityField (UserRoleStoredUserRole, UserRoleStoredUserRoleOwner, UserRoleStoredId))
 import LocalCooking.Database.Schema.Facebook.AccessToken (EntityField (FacebookUserAccessTokenStoredFacebookUserAccessToken, FacebookUserAccessTokenStoredFacebookUserDetails, FacebookUserAccessTokenStoredId))
@@ -14,7 +14,6 @@ import LocalCooking.Database.Schema.Salt (EntityField (PasswordSaltPasswordSalt,
 
 import qualified LocalCooking.Semantics.Mitch as Mitch
 import qualified LocalCooking.Semantics.Chef as Chef
-import qualified LocalCooking.Semantics.Admin as Admin
 import qualified LocalCooking.Semantics.Common as Common
 
 import Test.Tasty (defaultMain, testGroup)
@@ -35,12 +34,12 @@ main = defaultMain $ testGroup "Database Tests"
       , testCase "UserId" $
         assertBool "UserId" (jsonIso StoredUserId)
       ]
-    , testGroup "User.Pending"
-      [ testCase "PendingRegister" $
-        assertBool "PendingRegister" (jsonIso PendingRegistrationConfirmPendingRegister)
-      , testCase "PendingRegistrationConfirmId" $
-        assertBool "PendingRegistrationConfirmId" (jsonIso PendingRegistrationConfirmId)
-      ]
+    -- , testGroup "User.Pending"
+    --   [ testCase "PendingRegister" $
+    --     assertBool "PendingRegister" (jsonIso PendingRegistrationConfirmPendingRegister)
+    --   , testCase "PendingRegistrationConfirmId" $
+    --     assertBool "PendingRegistrationConfirmId" (jsonIso PendingRegistrationConfirmId)
+    --   ]
     , testGroup "User.Role"
       [ testCase "UserRole" $
         assertBool "UserRole" (jsonIso UserRoleStoredUserRole)
@@ -93,6 +92,8 @@ main = defaultMain $ testGroup "Database Tests"
       (\(x :: Mitch.Order) -> jsonIso x)
     , testProperty "LocalCooking.Semantic.Mitch.Customer"
       (\(x :: Mitch.Customer) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Mitch.CartEntry"
+      (\(x :: Mitch.CartEntry) -> jsonIso x)
 
     , testProperty "LocalCooking.Semantic.Chef.MealSettings"
       (\(x :: Chef.MealSettings) -> jsonIso x)
@@ -102,8 +103,18 @@ main = defaultMain $ testGroup "Database Tests"
       (\(x :: Chef.MenuSettings) -> jsonIso x)
     , testProperty "LocalCooking.Semantic.Chef.Order"
       (\(x :: Chef.Order) -> jsonIso x)
-    ]
 
+    , testProperty "LocalCooking.Semantic.Common.SocialLoginForm"
+      (\(x :: Common.SocialLoginForm) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Common.User"
+      (\(x :: Common.User) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Common.Register"
+      (\(x :: Common.Register) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Common.Login"
+      (\(x :: Common.Login) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Common.SocialLogin"
+      (\(x :: Common.SocialLogin) -> jsonIso x)
+    ]
   ]
 
 
