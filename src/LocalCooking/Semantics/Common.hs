@@ -151,6 +151,33 @@ instance FromJSON RegisterError where
       fail' = typeMismatch "Register" json
 
 
+data ConfirmEmailError
+  = ConfirmEmailTokenNonexistent
+  | ConfirmEmailUserNonexistent
+
+instance Arbitrary ConfirmEmailError where
+  arbitrary = oneof
+    [ pure ConfirmEmailTokenNonexistent
+    , pure ConfirmEmailUserNonexistent
+    ]
+
+instance ToJSON ConfirmEmailError where
+  toJSON x = case x of
+    ConfirmEmailTokenNonexistent -> String "tokenNonexistent"
+    ConfirmEmailUserNonexistent -> String "userNonexistent"
+
+
+instance FromJSON ConfirmEmailError where
+  parseJSON json = case json of
+    String s
+      | s == "tokenNonexistent" -> pure ConfirmEmailTokenNonexistent
+      | s == "userNonexistent" -> pure ConfirmEmailUserNonexistent
+      | otherwise             -> fail'
+    _ -> fail'
+    where
+      fail' = typeMismatch "ConfirmEmail" json
+
+
 
 data Login = Login
   { loginEmail    :: EmailAddress
