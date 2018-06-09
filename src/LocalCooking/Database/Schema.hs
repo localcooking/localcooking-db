@@ -19,14 +19,14 @@ import Database.Persist.Sql (ConnectionPool, runSqlPool, runMigration)
 migrateAll :: ConnectionPool -> IO ()
 migrateAll backend = do
   flip runSqlPool backend $ do
-    runMigration FacebookAccess.migrateAll
-    runMigration FacebookDetails.migrateAll
+    runMigration Salt.migrateAll
     runMigration Image.migrateAll
     runMigration IngredientDiet.migrateAll
-    runMigration Semantics.migrateAll
     runMigration TagMeal.migrateAll
     runMigration TagChef.migrateAll
     runMigration User.migrateAll
-    runMigration Customer.migrateAll
     runMigration UserRole.migrateAll
-    runMigration Salt.migrateAll
+    runMigration Customer.migrateAll
+    runMigration FacebookDetails.migrateAll
+    runMigration FacebookAccess.migrateAll
+    runMigration Semantics.migrateAll
