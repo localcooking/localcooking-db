@@ -85,6 +85,38 @@ instance FromJSON User where
                      <*> o .: "roles"
     _ -> typeMismatch "User" json
 
+data SetUser = SetUser
+  { setUserId          :: StoredUserId
+  , setUserEmail       :: EmailAddress
+  , setUserSocial      :: SocialLoginForm
+  , setUserOldPassword :: HashedPassword
+  , setUserNewPassword :: HashedPassword
+  } deriving (Eq, Show, Generic)
+
+instance Arbitrary SetUser where
+  arbitrary = SetUser <$> arbitrary
+                      <*> arbitrary
+                      <*> arbitrary
+                      <*> arbitrary
+                      <*> arbitrary
+
+instance ToJSON SetUser where
+  toJSON SetUser{..} = object
+    [ "id" .= setUserId
+    , "email" .= setUserEmail
+    , "social" .= setUserSocial
+    , "oldPassword" .= setUserOldPassword
+    , "newPassword" .= setUserNewPassword
+    ]
+
+instance FromJSON SetUser where
+  parseJSON json = case json of
+    Object o -> SetUser <$> o .: "id"
+                        <*> o .: "email"
+                        <*> o .: "social"
+                        <*> o .: "oldPassword"
+                        <*> o .: "newPassword"
+    _ -> typeMismatch "SetUser" json
 
 
 data Register = Register

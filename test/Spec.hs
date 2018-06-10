@@ -100,6 +100,8 @@ main = defaultMain $ testGroup "Database Tests"
       (\(x :: Common.SocialLoginForm) -> jsonIso x)
     , testProperty "LocalCooking.Semantic.Common.User"
       (\(x :: Common.User) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Common.SetUser"
+      (\(x :: Common.SetUser) -> jsonIso x)
     , testProperty "LocalCooking.Semantic.Common.Register"
       (\(x :: Common.Register) -> jsonIso x)
     , testProperty "LocalCooking.Semantic.Common.RegisterError"
