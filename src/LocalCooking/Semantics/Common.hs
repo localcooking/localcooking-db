@@ -52,7 +52,7 @@ data User = User
   { userId             :: StoredUserId
   , userCreated        :: UTCTime
   , userEmail          :: EmailAddress
-  , userSocial         :: SocialLoginForm
+  , userSocialLogin    :: SocialLoginForm
   , userEmailConfirmed :: Bool
   , userRoles          :: [UserRole]
   } deriving (Eq, Show, Generic)
@@ -70,7 +70,7 @@ instance ToJSON User where
     [ "id" .= userId
     , "created" .= userCreated
     , "email" .= userEmail
-    , "social" .= userSocial
+    , "socialLogin" .= userSocialLogin
     , "emailConfirmed" .= userEmailConfirmed
     , "roles" .= userRoles
     ]
@@ -80,7 +80,7 @@ instance FromJSON User where
     Object o -> User <$> o .: "id"
                      <*> o .: "created"
                      <*> o .: "email"
-                     <*> o .: "social"
+                     <*> o .: "socialLogin"
                      <*> o .: "emailConfirmed"
                      <*> o .: "roles"
     _ -> typeMismatch "User" json
@@ -88,7 +88,7 @@ instance FromJSON User where
 data SetUser = SetUser
   { setUserId          :: StoredUserId
   , setUserEmail       :: EmailAddress
-  , setUserSocial      :: SocialLoginForm
+  , setUserSocialLogin :: SocialLoginForm
   , setUserOldPassword :: HashedPassword
   , setUserNewPassword :: HashedPassword
   } deriving (Eq, Show, Generic)
@@ -104,7 +104,7 @@ instance ToJSON SetUser where
   toJSON SetUser{..} = object
     [ "id" .= setUserId
     , "email" .= setUserEmail
-    , "social" .= setUserSocial
+    , "socialLogin" .= setUserSocialLogin
     , "oldPassword" .= setUserOldPassword
     , "newPassword" .= setUserNewPassword
     ]
@@ -113,7 +113,7 @@ instance FromJSON SetUser where
   parseJSON json = case json of
     Object o -> SetUser <$> o .: "id"
                         <*> o .: "email"
-                        <*> o .: "social"
+                        <*> o .: "socialLogin"
                         <*> o .: "oldPassword"
                         <*> o .: "newPassword"
     _ -> typeMismatch "SetUser" json
