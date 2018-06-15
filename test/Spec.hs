@@ -13,6 +13,7 @@ import LocalCooking.Database.Schema.Salt (EntityField (PasswordSaltPasswordSalt,
 import qualified LocalCooking.Semantics.Mitch as Mitch
 import qualified LocalCooking.Semantics.Chef as Chef
 import qualified LocalCooking.Semantics.Common as Common
+import qualified LocalCooking.Semantics.Admin as Admin
 
 import Test.Tasty (defaultMain, testGroup)
 import Test.Tasty.HUnit (assertBool, testCase)
@@ -110,6 +111,11 @@ main = defaultMain $ testGroup "Database Tests"
       (\(x :: Common.Login) -> jsonIso x)
     , testProperty "LocalCooking.Semantic.Common.SocialLogin"
       (\(x :: Common.SocialLogin) -> jsonIso x)
+
+    , testProperty "LocalCooking.Semantic.Admin.SetUser"
+      (\(x :: Admin.SetUser) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Admin.NewUser"
+      (\(x :: Admin.NewUser) -> jsonIso x)
     ]
   ]
 
