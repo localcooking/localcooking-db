@@ -7,11 +7,7 @@
 module LocalCooking.Semantics.Admin where
 
 import LocalCooking.Semantics.Common (User)
--- import LocalCooking.Database.Schema.User (StoredUserId)
 import LocalCooking.Common.User.Password (HashedPassword)
--- import LocalCooking.Common.User.Role (UserRole)
--- import Facebook.Types (FacebookLoginCode, FacebookUserId)
--- import Google.Keys (ReCaptchaResponse)
 
 import Data.Time (UTCTime)
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (String, Object), object, (.=), (.:))
@@ -27,23 +23,44 @@ import Test.QuickCheck.Instances ()
 
 
 
-data SetUser = SetUser
-  { setUserUser :: User
-  , setUserNewPassword :: Maybe HashedPassword
-  } deriving (Eq, Show, Generic)
+data SetUser
+  = SetUserUpdate
+    { setUserUpdateUser :: User
+    , setUserUpdateNewPassword :: Maybe HashedPassword
+    }
+  | SetUserDelete User
+  deriving (Eq, Show, Generic)
 
 instance Arbitrary SetUser where
-  arbitrary = SetUser <$> arbitrary <*> arbitrary
+  arbitrary = oneof
+    [ SetUserUpdate <$> arbitrary <*> arbitrary
+    , SetUserDelete <$> arbitrary
+    ]
 
 instance ToJSON SetUser where
-  toJSON SetUser{..} = object
-    [ "user" .= setUserUser
-    , "newPassword" .= setUserNewPassword
-    ]
+  toJSON x = case x of
+    SetUserUpdate{..} -> object
+      [ "setUserUpdate" .= object
+        [ "user" .= setUserUpdateUser
+        , "newPassword" .= setUserUpdateNewPassword
+        ]
+      ]
+    SetUserDelete user -> object
+      [ "setUserDelete" .= object
+        [ "user" .= user
+        ]
+      ]
 
 instance FromJSON SetUser where
   parseJSON json = case json of
-    Object o -> SetUser <$> o .: "user" <*> o .: "newPassword"
+    Object o -> do
+      let update = do
+            o' <- o .: "setUserUpdate"
+            SetUserUpdate <$> o' .: "user" <*> o' .: "newPassword"
+          delete = do
+            o' <- o .: "setUserDelete"
+            SetUserDelete <$> o' .: "user"
+      update <|> delete
     _ -> typeMismatch "SetUser" json
 
 
