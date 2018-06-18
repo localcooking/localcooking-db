@@ -3,6 +3,7 @@
   , RecordWildCards
   , DeriveGeneric
   , NamedFieldPuns
+  , GeneralizedNewtypeDeriving
   #-}
 
 module LocalCooking.Semantics.Mitch where
@@ -428,31 +429,31 @@ instance FromJSON Order where
 data Customer = Customer
   { customerName      :: Name
   , customerAddress   :: USAAddress
-  , customerDiets     :: [Diet]
-  , customerAllergies :: [IngredientName]
   } deriving (Eq, Show, Generic)
 
 instance Arbitrary Customer where
   arbitrary = Customer <$> arbitrary
-                       <*> arbitrary
-                       <*> arbitrary
                        <*> arbitrary
 
 instance ToJSON Customer where
   toJSON Customer{..} = object
     [ "name" .= customerName
     , "address" .= customerAddress
-    , "diets" .= customerDiets
-    , "allergies" .= customerAllergies
     ]
 
 instance FromJSON Customer where
   parseJSON json = case json of
     Object o -> Customer <$> o .: "name"
                          <*> o .: "address"
-                         <*> o .: "diets"
-                         <*> o .: "allergies"
     _ -> typeMismatch "Customer" json
+
+newtype Diets = Diets
+  { getDiets :: [Diet]
+  } deriving (Eq, Show, Generic, Arbitrary, ToJSON, FromJSON)
+
+newtype Allergies = Allergies
+  { getAllergies :: [IngredientName]
+  } deriving (Eq, Show, Generic, Arbitrary, ToJSON, FromJSON)
 
 
 
