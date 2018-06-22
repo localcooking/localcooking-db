@@ -11,8 +11,8 @@
 
 module LocalCooking.Database.Schema.IngredientDiet where
 
-import LocalCooking.Common.Ingredient (IngredientName)
-import LocalCooking.Common.Diet (Diet)
+import LocalCooking.Database.Schema.Tag.Ingredient (StoredIngredientTagId)
+import LocalCooking.Database.Schema.Tag.Diet (StoredDietTagId)
 
 import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)
 
@@ -22,19 +22,9 @@ import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkM
 -- the unique _relation_ between the two entities - there could be many records
 -- of this relation using similar diets or ingredients.
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-StoredIngredient
-    ingredientName IngredientName
-    UniqueIngredientName ingredientName
-    deriving Eq Show
-
-StoredDiet
-    diet Diet
-    UniqueDiet diet
-    deriving Eq Show
-
 IngredientDietViolation
-    ingredientViolator StoredIngredientId
-    dietViolated StoredDietId
+    ingredientViolator StoredIngredientTagId
+    dietViolated StoredDietTagId
     UniqueViolation ingredientViolator dietViolated
     deriving Eq Show
 |]

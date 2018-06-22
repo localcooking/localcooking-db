@@ -12,9 +12,10 @@ import LocalCooking.Database.Schema.Semantics (StoredReviewId, StoredMealId)
 import LocalCooking.Common.Rating (Rating)
 import LocalCooking.Common.Tag.Chef (ChefTag)
 import LocalCooking.Common.Tag.Meal (MealTag)
+import LocalCooking.Common.Tag.Ingredient (IngredientTag)
+import LocalCooking.Common.Tag.Diet (DietTag)
 import LocalCooking.Common.User.Name (Name)
-import LocalCooking.Common.Diet (Diet)
-import LocalCooking.Common.Ingredient (Ingredient, IngredientName)
+import LocalCooking.Common.Ingredient (Ingredient)
 import LocalCooking.Common.Order (OrderProgress)
 
 import Data.Address (USAAddress)
@@ -194,7 +195,7 @@ data MealSynopsis = MealSynopsis
   , mealSynopsisRating    :: Rating
   , mealSynopsisOrders    :: Int -- ^ Like "number of purchases" - for customer confidence
   , mealSynopsisTags      :: [MealTag]
-  , mealSynopsisDiets     :: [Diet]
+  , mealSynopsisDiets     :: [DietTag]
   , mealSynopsisPrice     :: Price
   } deriving (Eq, Show, Generic)
 
@@ -245,7 +246,7 @@ data Meal = Meal
   , mealInstructions :: MarkdownText
   , mealImages       :: [ImageSource]
   , mealIngredients  :: [Ingredient]
-  , mealDiets        :: [Diet] -- ^ derived from Ingredients listing in DB
+  , mealDiets        :: [DietTag] -- ^ derived from Ingredients listing in DB
   , mealTags         :: [MealTag]
   , mealOrders       :: Int
   , mealRating       :: Rating
@@ -448,11 +449,11 @@ instance FromJSON Customer where
     _ -> typeMismatch "Customer" json
 
 newtype Diets = Diets
-  { getDiets :: [Diet]
+  { getDiets :: [DietTag]
   } deriving (Eq, Show, Generic, Arbitrary, ToJSON, FromJSON)
 
 newtype Allergies = Allergies
-  { getAllergies :: [IngredientName]
+  { getAllergies :: [IngredientTag]
   } deriving (Eq, Show, Generic, Arbitrary, ToJSON, FromJSON)
 
 

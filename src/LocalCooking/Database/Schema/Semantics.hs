@@ -16,7 +16,7 @@ import LocalCooking.Database.Schema.User (StoredUserId)
 import LocalCooking.Database.Schema.User.Customer (StoredCustomerId)
 import LocalCooking.Database.Schema.Tag.Meal (StoredMealTagId)
 import LocalCooking.Database.Schema.Tag.Chef (StoredChefTagId)
-import LocalCooking.Database.Schema.IngredientDiet (StoredIngredientId)
+import LocalCooking.Database.Schema.Tag.Ingredient (StoredIngredientTagId)
 import LocalCooking.Common.Order (OrderProgress)
 import LocalCooking.Common.Rating (Rating)
 import LocalCooking.Common.User.Name (Name)
@@ -51,7 +51,7 @@ StoredMeal
 
 MealIngredient
     mealIngredientMeal StoredMealId
-    mealIngredientIngredient StoredIngredientId
+    mealIngredientIngredient StoredIngredientTagId
     UniqueMealIngredient mealIngredientMeal mealIngredientIngredient
     deriving Eq Show
 

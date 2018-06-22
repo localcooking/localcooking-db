@@ -13,7 +13,6 @@ module LocalCooking.Database.Schema.User.Chef where
 
 import LocalCooking.Database.Schema.User (StoredUserId)
 import LocalCooking.Database.Schema.Tag.Chef (StoredChefTagId)
--- import LocalCooking.Common.Tag.Chef (ChefTag)
 import LocalCooking.Common.User.Name (Name)
 
 import Data.Text.Permalink (Permalink)

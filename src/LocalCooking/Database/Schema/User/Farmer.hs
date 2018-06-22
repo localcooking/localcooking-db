@@ -13,7 +13,6 @@ module LocalCooking.Database.Schema.User.Farmer where
 
 import LocalCooking.Database.Schema.User (StoredUserId)
 import LocalCooking.Database.Schema.Tag.Farm (StoredFarmTagId)
--- import LocalCooking.Common.Tag.Farm (FarmTag)
 import LocalCooking.Common.User.Name (Name)
 
 import Data.Text.Permalink (Permalink)

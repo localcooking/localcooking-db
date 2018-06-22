@@ -9,8 +9,8 @@ module LocalCooking.Semantics.Chef where
 import LocalCooking.Database.Schema.Semantics (StoredMealId, StoredOrderId)
 import LocalCooking.Common.Tag.Chef (ChefTag)
 import LocalCooking.Common.Tag.Meal (MealTag)
+import LocalCooking.Common.Tag.Ingredient (IngredientTag)
 import LocalCooking.Common.User.Name (Name)
-import LocalCooking.Common.Ingredient (IngredientName)
 import LocalCooking.Common.Order (OrderProgress)
 
 import Data.Price (Price)
@@ -75,7 +75,7 @@ data MealSettings = MealSettings
   , mealSettingsDescription  :: MarkdownText
   , mealSettingsInstructions :: MarkdownText
   , mealSettingsImages       :: [ImageSource]
-  , mealSettingsIngredients  :: [IngredientName]
+  , mealSettingsIngredients  :: [IngredientTag]
   , mealSettingsTags         :: [MealTag]
   , mealSettingsPrice        :: Price
   } deriving (Eq, Show, Generic)

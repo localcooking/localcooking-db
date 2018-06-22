@@ -6,6 +6,8 @@
 
 module LocalCooking.Semantics.Content where
 
+import LocalCooking.Common.User.Name (Name)
+import LocalCooking.Common.ContentRecord (ContentRecordVariant)
 
 import Data.Price (Price)
 import Data.Image.Source (ImageSource)
@@ -19,3 +21,9 @@ import Data.Aeson.Types (typeMismatch)
 import GHC.Generics (Generic)
 import Test.QuickCheck (Arbitrary (..))
 import Test.QuickCheck.Instances ()
+
+
+data EditorSettings = EditorSettings
+  { editorSettingsName :: Name
+  , editorSettingsAssignedRecords :: [ContentRecordVariant]
+  }
