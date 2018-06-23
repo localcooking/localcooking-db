@@ -1,8 +1,10 @@
 module LocalCooking.Database.Query.IngredientDiet where
 
 import LocalCooking.Database.Schema.IngredientDiet
-  ( Unique (UniqueViolation), IngredientDietViolation (..)
-  , EntityField (IngredientDietViolationDietViolated, IngredientDietViolationIngredientViolator))
+  ( IngredientDietViolation (..)
+  , EntityField
+    ( IngredientDietViolationDietViolated, IngredientDietViolationIngredientViolator)
+  )
 import LocalCooking.Database.Schema.Tag.Ingredient
   ( Unique (UniqueStoredIngredientTag), StoredIngredientTag (..), StoredIngredientTagId)
 import LocalCooking.Database.Schema.Tag.Diet

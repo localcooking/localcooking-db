@@ -20,6 +20,7 @@ import Data.Aeson (ToJSON (..), FromJSON (..), Value (String))
 import Data.Aeson.Types (typeMismatch)
 import Data.Time (UTCTime)
 import Text.EmailAddress (EmailAddress)
+import Database.Persist.Sql (toSqlKey)
 import Database.Persist.Class (PersistEntity (EntityField))
 import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)
 import Test.QuickCheck (Arbitrary (..))
@@ -38,7 +39,7 @@ StoredUser
 
 
 instance Arbitrary StoredUserId where
-  arbitrary = unsafeCoerce <$> (arbitrary :: _ Int)
+  arbitrary = toSqlKey <$> arbitrary
 
 instance Hashable StoredUserId where
   hashWithSalt salt x = hashWithSalt salt (toJSON x)

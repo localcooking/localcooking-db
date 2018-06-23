@@ -9,11 +9,8 @@ module LocalCooking.Semantics.Admin where
 import LocalCooking.Semantics.Common (User)
 import LocalCooking.Common.User.Password (HashedPassword)
 
-import Data.Time (UTCTime)
-import Data.Aeson (FromJSON (..), ToJSON (..), Value (String, Object), object, (.=), (.:))
+import Data.Aeson (FromJSON (..), ToJSON (..), Value (Object), object, (.=), (.:))
 import Data.Aeson.Types (typeMismatch)
-import qualified Data.ByteString.Lazy as LBS
-import qualified Data.Text.Lazy.Encoding as LT
 import Control.Applicative ((<|>))
 import Text.EmailAddress (EmailAddress)
 import GHC.Generics (Generic)
