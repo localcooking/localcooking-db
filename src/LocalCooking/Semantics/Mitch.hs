@@ -427,26 +427,26 @@ instance FromJSON Order where
 
 
 
-data Customer = Customer
-  { customerName      :: Name
-  , customerAddress   :: USAAddress
+data CustomerSettings = CustomerSettings
+  { customerSettingsName    :: Name
+  , customerSettingsAddress :: USAAddress
   } deriving (Eq, Show, Generic)
 
-instance Arbitrary Customer where
-  arbitrary = Customer <$> arbitrary
-                       <*> arbitrary
+instance Arbitrary CustomerSettings where
+  arbitrary = CustomerSettings  <$> arbitrary
+                                <*> arbitrary
 
-instance ToJSON Customer where
-  toJSON Customer{..} = object
-    [ "name" .= customerName
-    , "address" .= customerAddress
+instance ToJSON CustomerSettings where
+  toJSON CustomerSettings{..} = object
+    [ "name" .= customerSettingsName
+    , "address" .= customerSettingsAddress
     ]
 
-instance FromJSON Customer where
+instance FromJSON CustomerSettings where
   parseJSON json = case json of
-    Object o -> Customer <$> o .: "name"
-                         <*> o .: "address"
-    _ -> typeMismatch "Customer" json
+    Object o -> CustomerSettings  <$> o .: "name"
+                                  <*> o .: "address"
+    _ -> typeMismatch "CustomerSettings" json
 
 newtype Diets = Diets
   { getDiets :: [DietTag]
