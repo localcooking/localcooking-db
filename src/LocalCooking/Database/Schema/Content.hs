@@ -5,6 +5,7 @@
   , TemplateHaskell
   , FlexibleInstances
   , OverloadedStrings
+  , StandaloneDeriving
   , MultiParamTypeClasses
   , GeneralizedNewtypeDeriving
   #-}
@@ -16,7 +17,9 @@ import LocalCooking.Database.Schema.User.Editor (StoredEditorId)
 import LocalCooking.Common.ContentRecord (ContentRecord, ContentRecordVariant)
 
 import Data.Time (UTCTime)
+import Database.Persist.Sql (toSqlKey)
 import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)
+import Test.QuickCheck (Arbitrary (..))
 
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
@@ -44,3 +47,6 @@ RecordSubmissionApproval
     UniqueSubmissionApproval recordSubmissionApprovalRecord recordSubmissionApprovalEditor
     deriving Eq Show
 |]
+
+instance Arbitrary RecordSubmissionApprovalId where
+  arbitrary = toSqlKey <$> arbitrary

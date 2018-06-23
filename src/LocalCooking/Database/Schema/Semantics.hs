@@ -30,6 +30,7 @@ import Data.Hashable (Hashable (..))
 import Data.Aeson (encode)
 import Data.Time (UTCTime)
 import Data.Time.Calendar (Day)
+import Database.Persist.Sql (toSqlKey)
 import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)
 import Test.QuickCheck (Arbitrary (..))
 import Unsafe.Coerce (unsafeCoerce)
@@ -129,35 +130,35 @@ CartRelation
 
 
 instance Arbitrary StoredReviewId where
-  arbitrary = unsafeCoerce <$> (arbitrary :: _ Int)
+  arbitrary = toSqlKey <$> arbitrary
 
 instance Hashable StoredReviewId where
   hashWithSalt s x = hashWithSalt s (encode x)
 
 
 instance Arbitrary StoredOrderId where
-  arbitrary = unsafeCoerce <$> (arbitrary :: _ Int)
+  arbitrary = toSqlKey <$> arbitrary
 
 instance Hashable StoredOrderId where
   hashWithSalt s x = hashWithSalt s (encode x)
 
 
 instance Arbitrary StoredMealId where
-  arbitrary = unsafeCoerce <$> (arbitrary :: _ Int)
+  arbitrary = toSqlKey <$> arbitrary
 
 instance Hashable StoredMealId where
   hashWithSalt s x = hashWithSalt s (encode x)
 
 
 instance Arbitrary StoredChefId where
-  arbitrary = unsafeCoerce <$> (arbitrary :: _ Int)
+  arbitrary = toSqlKey <$> arbitrary
 
 instance Hashable StoredChefId where
   hashWithSalt s x = hashWithSalt s (encode x)
 
 
 instance Arbitrary StoredMenuId where
-  arbitrary = unsafeCoerce <$> (arbitrary :: _ Int)
+  arbitrary = toSqlKey <$> arbitrary
 
 instance Hashable StoredMenuId where
   hashWithSalt s x = hashWithSalt s (encode x)

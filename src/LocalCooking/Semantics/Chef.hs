@@ -28,43 +28,43 @@ import Test.QuickCheck.Instances ()
 
 
 -- unique key is tied to the user who submits it -- StoredUserId is a valid id
-data ChefSettings = ChefSettings
-  { chefSettingsName      :: Name
-  , chefSettingsPermalink :: Permalink
-  , chefSettingsImages    :: [ImageSource]
-  , chefSettingsAvatar    :: ImageSource
-  , chefSettingsBio       :: MarkdownText
-  , chefSettingsTags      :: [ChefTag]
+data GetSetChef = GetSetChef
+  { getSetChefName      :: Name
+  , getSetChefPermalink :: Permalink
+  , getSetChefImages    :: [ImageSource]
+  , getSetChefAvatar    :: ImageSource
+  , getSetChefBio       :: MarkdownText
+  , getSetChefTags      :: [ChefTag]
   } deriving (Eq, Show, Generic)
 
 
-instance Arbitrary ChefSettings where
-  arbitrary = ChefSettings <$> arbitrary
-                           <*> arbitrary
-                           <*> arbitrary
-                           <*> arbitrary
-                           <*> arbitrary
-                           <*> arbitrary
+instance Arbitrary GetSetChef where
+  arbitrary = GetSetChef <$> arbitrary
+                         <*> arbitrary
+                         <*> arbitrary
+                         <*> arbitrary
+                         <*> arbitrary
+                         <*> arbitrary
 
-instance ToJSON ChefSettings where
-  toJSON ChefSettings{..} = object
-    [ "name" .= chefSettingsName
-    , "permalink" .= chefSettingsPermalink
-    , "images" .= chefSettingsImages
-    , "avatar" .= chefSettingsAvatar
-    , "bio" .= chefSettingsBio
-    , "tags" .= chefSettingsTags
+instance ToJSON GetSetChef where
+  toJSON GetSetChef{..} = object
+    [ "name" .= getSetChefName
+    , "permalink" .= getSetChefPermalink
+    , "images" .= getSetChefImages
+    , "avatar" .= getSetChefAvatar
+    , "bio" .= getSetChefBio
+    , "tags" .= getSetChefTags
     ]
 
-instance FromJSON ChefSettings where
+instance FromJSON GetSetChef where
   parseJSON json = case json of
-    Object o -> ChefSettings <$> o .: "name"
-                             <*> o .: "permalink"
-                             <*> o .: "images"
-                             <*> o .: "avatar"
-                             <*> o .: "bio"
-                             <*> o .: "tags"
-    _ -> typeMismatch "ChefSettings" json
+    Object o -> GetSetChef <$> o .: "name"
+                           <*> o .: "permalink"
+                           <*> o .: "images"
+                           <*> o .: "avatar"
+                           <*> o .: "bio"
+                           <*> o .: "tags"
+    _ -> typeMismatch "GetSetChef" json
 
 
 -- submission with a StoredMealId constitutes an update
