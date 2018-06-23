@@ -19,6 +19,6 @@ import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkM
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 StoredEditor
     storedEditorOwner StoredUserId
-    UniqueEditorOwner storedEditorOwner
+    UniqueEditor storedEditorOwner
     deriving Eq Show
 |]
