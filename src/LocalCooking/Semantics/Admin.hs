@@ -93,8 +93,8 @@ data GetSetSubmissionPolicy = GetSetSubmissionPolicy
 
 instance Arbitrary GetSetSubmissionPolicy where
   arbitrary = GetSetSubmissionPolicy <$> arbitrary
-                                  <*> arbitrary
-                                  <*> arbitrary
+                                     <*> arbitrary
+                                     <*> arbitrary
 
 instance ToJSON GetSetSubmissionPolicy where
   toJSON GetSetSubmissionPolicy{..} = object
@@ -106,10 +106,6 @@ instance ToJSON GetSetSubmissionPolicy where
 instance FromJSON GetSetSubmissionPolicy where
   parseJSON json = case json of
     Object o -> GetSetSubmissionPolicy <$> o .: "variant"
-                                    <*> o .: "additional"
-                                    <*> o .: "assigned"
+                                       <*> o .: "additional"
+                                       <*> o .: "assigned"
     _ -> typeMismatch "GetSetSubmissionPolicy" json
-
-
-
-

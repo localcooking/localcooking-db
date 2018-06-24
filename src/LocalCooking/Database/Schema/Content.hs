@@ -26,7 +26,7 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 RecordSubmissionPolicy
     recordSubmissionPolicyVariant ContentRecordVariant
     recordSubmissionPolicyAdditional Int
-    UniquePolicyContentRecordVariant recordSubmissionPolicyVariant
+    UniqueSubmissionPolicyVariant recordSubmissionPolicyVariant
     deriving Eq Show
 
 RecordAssignedSubmissionPolicy
