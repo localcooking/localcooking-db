@@ -7,6 +7,7 @@
 module LocalCooking.Semantics.Content where
 
 import LocalCooking.Database.Schema.Content (RecordSubmissionApprovalId)
+import LocalCooking.Database.Schema.User.Editor (StoredEditorId)
 import LocalCooking.Common.User.Name (Name)
 import LocalCooking.Common.ContentRecord (ContentRecordVariant)
 
@@ -60,3 +61,38 @@ instance FromJSON SetEditor where
   parseJSON json = case json of
     Object o -> SetEditor <$> o .: "name"
     _ -> typeMismatch "SetEditor" json
+
+
+
+data GetSubmissionPolicy = GetSubmissionPolicy
+  { getSubmissionPolicyVariant    :: ContentRecordVariant
+  , getSubmissionPolicyAdditional :: Int
+  , getSubmissionPolicyAssigned   :: [StoredEditorId]
+  } deriving (Eq, Show, Generic)
+
+instance Arbitrary GetSubmissionPolicy where
+  arbitrary = GetSubmissionPolicy <$> arbitrary
+                                  <*> arbitrary
+                                  <*> arbitrary
+
+instance ToJSON GetSubmissionPolicy where
+  toJSON GetSubmissionPolicy{..} = object
+    [ "variant" .= getSubmissionPolicyVariant
+    , "additional" .= getSubmissionPolicyAdditional
+    , "assigned" .= getSubmissionPolicyAssigned
+    ]
+
+instance FromJSON GetSubmissionPolicy where
+  parseJSON json = case json of
+    Object o -> GetSubmissionPolicy <$> o .: "variant"
+                                    <*> o .: "additional"
+                                    <*> o .: "assigned"
+    _ -> typeMismatch "GetSubmissionPolicy" json
+
+
+
+data SearchAssignedSubmissionPolicy = SearchAssignedSubmissionPolicy
+
+
+
+data SetSubmissionPolicy
