@@ -258,3 +258,22 @@ instance FromJSON SocialLogin where
   parseJSON json = case json of
     Object o -> SocialLoginFB <$> o .: "fb"
     _ -> typeMismatch "SocialLogin" json
+
+
+
+-- | Segregated record key from semantic datum
+data WithId k a = WithId
+  { withIdId :: k
+  , withIdContent :: a
+  } deriving (Eq, Show, Generic)
+
+instance (ToJSON k, ToJSON a) => ToJSON (WithId k a) where
+  toJSON WithId{..} = object
+    [ "id" .= withIdId
+    , "content" .= withIdContent
+    ]
+
+instance (FromJSON k, FromJSON a) => FromJSON (WithId k a) where
+  parseJSON json = case json of
+    Object o -> WithId <$> o .: "id" <*> o .: "content"
+    _ -> typeMismatch "WithId" json
