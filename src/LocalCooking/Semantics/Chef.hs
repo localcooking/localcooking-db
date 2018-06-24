@@ -6,7 +6,7 @@
 
 module LocalCooking.Semantics.Chef where
 
-import LocalCooking.Database.Schema.Semantics (StoredMealId, StoredOrderId)
+import LocalCooking.Database.Schema (StoredMealId, StoredOrderId)
 import LocalCooking.Common.Tag.Chef (ChefTag)
 import LocalCooking.Common.Tag.Meal (MealTag)
 import LocalCooking.Common.Tag.Ingredient (IngredientTag)

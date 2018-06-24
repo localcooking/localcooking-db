@@ -8,7 +8,7 @@
 
 module LocalCooking.Semantics.Mitch where
 
-import LocalCooking.Database.Schema.Semantics (StoredReviewId, StoredMealId)
+import LocalCooking.Database.Schema (StoredReviewId, StoredMealId)
 import LocalCooking.Common.Rating (Rating)
 import LocalCooking.Common.Tag.Chef (ChefTag)
 import LocalCooking.Common.Tag.Meal (MealTag)

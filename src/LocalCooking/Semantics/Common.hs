@@ -6,7 +6,7 @@
 
 module LocalCooking.Semantics.Common where
 
-import LocalCooking.Database.Schema.User (StoredUserId)
+import LocalCooking.Database.Schema (StoredUserId)
 import LocalCooking.Common.User.Password (HashedPassword)
 import LocalCooking.Common.User.Role (UserRole)
 import Facebook.Types (FacebookLoginCode, FacebookUserId)

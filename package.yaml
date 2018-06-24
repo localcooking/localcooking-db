@@ -27,12 +27,15 @@ dependencies:
 - localcooking-fb
 - localcooking-shared
 - aeson
+- aeson-attoparsec
+- attoparsec
 - attoparsec-uri
 - bytestring
 - containers
 - emailaddress >= 0.2.0.1
 - hashable
 - monad-logger
+- mtl
 - persistent
 - persistent-template
 - QuickCheck
