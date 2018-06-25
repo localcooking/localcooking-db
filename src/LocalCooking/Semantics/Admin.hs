@@ -8,8 +8,8 @@ module LocalCooking.Semantics.Admin where
 
 import LocalCooking.Database.Schema (StoredEditorId)
 import LocalCooking.Semantics.Common (User)
+import LocalCooking.Semantics.ContentRecord (ContentRecordVariant)
 import LocalCooking.Common.User.Password (HashedPassword)
--- import LocalCooking.Common.ContentRecord (ContentRecordVariant)
 
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (Object), object, (.=), (.:))
 import Data.Aeson.Types (typeMismatch)
@@ -84,27 +84,27 @@ instance FromJSON NewUser where
 
 
 
--- data GetSetSubmissionPolicy = GetSetSubmissionPolicy
---   { getSetSubmissionPolicyVariant    :: ContentRecordVariant
---   , getSetSubmissionPolicyAdditional :: Int
---   , getSetSubmissionPolicyAssigned   :: [StoredEditorId]
---   } deriving (Eq, Show, Generic)
+data GetSetSubmissionPolicy = GetSetSubmissionPolicy
+  { getSetSubmissionPolicyVariant    :: ContentRecordVariant
+  , getSetSubmissionPolicyAdditional :: Int
+  , getSetSubmissionPolicyAssigned   :: [StoredEditorId]
+  } deriving (Eq, Show, Generic)
 
--- instance Arbitrary GetSetSubmissionPolicy where
---   arbitrary = GetSetSubmissionPolicy <$> arbitrary
---                                      <*> arbitrary
---                                      <*> arbitrary
+instance Arbitrary GetSetSubmissionPolicy where
+  arbitrary = GetSetSubmissionPolicy <$> arbitrary
+                                     <*> arbitrary
+                                     <*> arbitrary
 
--- instance ToJSON GetSetSubmissionPolicy where
---   toJSON GetSetSubmissionPolicy{..} = object
---     [ "variant" .= getSetSubmissionPolicyVariant
---     , "additional" .= getSetSubmissionPolicyAdditional
---     , "assigned" .= getSetSubmissionPolicyAssigned
---     ]
+instance ToJSON GetSetSubmissionPolicy where
+  toJSON GetSetSubmissionPolicy{..} = object
+    [ "variant" .= getSetSubmissionPolicyVariant
+    , "additional" .= getSetSubmissionPolicyAdditional
+    , "assigned" .= getSetSubmissionPolicyAssigned
+    ]
 
--- instance FromJSON GetSetSubmissionPolicy where
---   parseJSON json = case json of
---     Object o -> GetSetSubmissionPolicy <$> o .: "variant"
---                                        <*> o .: "additional"
---                                        <*> o .: "assigned"
---     _ -> typeMismatch "GetSetSubmissionPolicy" json
+instance FromJSON GetSetSubmissionPolicy where
+  parseJSON json = case json of
+    Object o -> GetSetSubmissionPolicy <$> o .: "variant"
+                                       <*> o .: "additional"
+                                       <*> o .: "assigned"
+    _ -> typeMismatch "GetSetSubmissionPolicy" json
