@@ -267,6 +267,9 @@ data WithId k a = WithId
   , withIdContent :: a
   } deriving (Eq, Show, Generic)
 
+instance (Arbitrary k, Arbitrary a) => Arbitrary (WithId k a) where
+  arbitrary = WithId <$> arbitrary <*> arbitrary
+
 instance (ToJSON k, ToJSON a) => ToJSON (WithId k a) where
   toJSON WithId{..} = object
     [ "id" .= withIdId

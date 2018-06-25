@@ -7,8 +7,9 @@
 
 module LocalCooking.Semantics.ContentRecord where
 
+import LocalCooking.Semantics.Common (WithId)
 import LocalCooking.Semantics.Chef (GetSetChef, MealSettings, MenuSettings)
-import LocalCooking.Database.Schema (StoredEditorId)
+import LocalCooking.Database.Schema (StoredEditorId, StoredMenuId)
 import LocalCooking.Common.User.Name (Name)
 import LocalCooking.Common.Tag.Chef (ChefTag)
 import LocalCooking.Common.Tag.Culture (CultureTag)
@@ -235,7 +236,8 @@ tagRecordVariant x = case x of
 data ChefRecord
   = ChefRecordChef GetSetChef
   | ChefRecordMeal MealSettings
-  | ChefRecordMenu MenuSettings
+  | ChefRecordSetMenu (WithId StoredMenuId MenuSettings)
+  | ChefRecordNewMenu MenuSettings
   deriving (Eq, Show, Generic)
 derivePersistFieldJSON "ChefRecord"
 
@@ -243,29 +245,33 @@ instance Arbitrary ChefRecord where
   arbitrary = oneof
     [ ChefRecordChef <$> arbitrary
     , ChefRecordMeal <$> arbitrary
-    , ChefRecordMenu <$> arbitrary
+    , ChefRecordSetMenu <$> arbitrary
+    , ChefRecordNewMenu <$> arbitrary
     ]
 
 instance ToJSON ChefRecord where
   toJSON x = case x of
     ChefRecordChef y -> object ["chef" .= y]
     ChefRecordMeal y -> object ["meal" .= y]
-    ChefRecordMenu y -> object ["menu" .= y]
+    ChefRecordSetMenu y -> object ["setMenu" .= y]
+    ChefRecordNewMenu y -> object ["newMenu" .= y]
 
 instance FromJSON ChefRecord where
   parseJSON json = case json of
     Object o -> do
       let chef = ChefRecordChef <$> o .: "chef"
           meal = ChefRecordMeal <$> o .: "meal"
-          menu = ChefRecordMenu <$> o .: "menu"
-      chef <|> meal <|> menu
+          setMenu = ChefRecordSetMenu <$> o .: "setMenu"
+          newMenu = ChefRecordNewMenu <$> o .: "newMenu"
+      chef <|> meal <|> setMenu <|> newMenu
     _ -> typeMismatch "ChefRecord" json
 
 chefRecordVariant :: ChefRecord -> ChefRecordVariant
 chefRecordVariant x = case x of
   ChefRecordChef _ -> ChefVariantChef
   ChefRecordMeal _ -> ChefVariantMeal
-  ChefRecordMenu _ -> ChefVariantMenu
+  ChefRecordSetMenu _ -> ChefVariantMenu
+  ChefRecordNewMenu _ -> ChefVariantMenu
 
 
 
