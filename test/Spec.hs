@@ -135,6 +135,10 @@ main = defaultMain $ testGroup "Database Tests"
       (\(x :: Content.GetEditor) -> jsonIso x)
     , testProperty "LocalCooking.Semantic.Content.SetEditor"
       (\(x :: Content.SetEditor) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Content.GetRecordSubmissionPolicy"
+      (\(x :: Content.GetRecordSubmissionPolicy) -> jsonIso x)
+    , testProperty "LocalCooking.Semantic.Content.GetRecordSubmission"
+      (\(x :: Content.GetRecordSubmission) -> jsonIso x)
 
     , testProperty "LocalCooking.Semantic.ContentRecord.TagRecordVariant"
       (\(x :: ContentRecord.TagRecordVariant) -> jsonIso x)
