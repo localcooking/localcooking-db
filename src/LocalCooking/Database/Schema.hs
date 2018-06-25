@@ -114,9 +114,9 @@ StoredChef
     storedChefOwner StoredUserId
     storedChefName Name
     storedChefPermalink Permalink
+    storedChefBio MarkdownText
     storedChefImages [ImageSource]
     storedChefAvatar ImageSource
-    storedChefBio MarkdownText
     UniqueChefOwner storedChefOwner
     UniqueChefPermalink storedChefPermalink
     deriving Eq Show
