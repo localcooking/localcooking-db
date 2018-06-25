@@ -13,6 +13,7 @@ migrateEverything :: ReaderT SqlBackend IO ()
 migrateEverything = do
   runMigration Schema.migrateAll
   runMigration ContentSchema.migrateAll
+  -- initialize total coverage of all submittable policy variants
   forM_ [minBound .. maxBound] $ \variant -> do
     mPolicy <- getBy (ContentSchema.UniqueSubmissionPolicyVariant variant)
     case mPolicy of
