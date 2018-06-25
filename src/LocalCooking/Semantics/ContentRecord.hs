@@ -7,6 +7,7 @@
 
 module LocalCooking.Semantics.ContentRecord where
 
+import LocalCooking.Semantics.Chef (GetSetChef, MealSettings, MenuSettings)
 import LocalCooking.Database.Schema (StoredEditorId)
 import LocalCooking.Common.User.Name (Name)
 import LocalCooking.Common.Tag.Chef (ChefTag)
@@ -78,40 +79,85 @@ tagRecordVariantParser = do
 
 
 
+data ChefRecordVariant
+  = ChefVariantChef
+  | ChefVariantMeal
+  | ChefVariantMenu
+  deriving (Eq, Ord, Enum, Bounded, Show, Read, Generic)
+derivePersistFieldJSON "ChefRecordVariant"
+
+instance Arbitrary ChefRecordVariant where
+  arbitrary = oneof
+    [ pure ChefVariantChef
+    , pure ChefVariantMeal
+    , pure ChefVariantMenu
+    ]
+
+instance Hashable ChefRecordVariant
+
+instance ToJSON ChefRecordVariant where
+  toJSON x = String $ case x of
+    ChefVariantChef -> "chefChef"
+    ChefVariantMeal -> "mealChef"
+    ChefVariantMenu -> "menuChef"
+
+instance FromJSON ChefRecordVariant where
+  parseJSON = attoAeson chefRecordVariantParser
+
+chefRecordVariantParser :: Parser ChefRecordVariant
+chefRecordVariantParser = do
+  let chef = ChefVariantChef <$ string "chefChef"
+      meal = ChefVariantMeal <$ string "mealChef"
+      menu = ChefVariantMenu <$ string "menuChef"
+  chef <|> meal <|> menu
+
+
+
 
 
 -- | Top-level nullary storable variant declaring which type of content is stored
 data ContentRecordVariant
   = TagRecordVariant TagRecordVariant
+  | ChefRecordVariant ChefRecordVariant
   deriving (Eq, Ord, Show, Read, Generic)
 derivePersistFieldJSON "ContentRecordVariant"
 
 instance Enum ContentRecordVariant where
   fromEnum x = case x of
     TagRecordVariant y -> adjustTag (fromEnum y)
+    ChefRecordVariant y -> adjustChef (fromEnum y)
     where
       -- inclusive bounds for each type
       minBoundTag = fromEnum (minBound :: TagRecordVariant)
       maxBoundTag = fromEnum (maxBound :: TagRecordVariant)
+      minBoundChef = fromEnum (minBound :: ChefRecordVariant)
+      maxBoundChef = fromEnum (maxBound :: ChefRecordVariant)
       adjustTag j = j + 0 -- maxBoundTag + 1
+      adjustChef j = j + maxBoundTag + 1
   toEnum i
     |  i < 0 = minBound
     |  i >= minBoundTag
     && i <= maxBoundTag = TagRecordVariant (toEnum (adjustTag i))
+    |  i >= minBoundChef
+    && i <= maxBoundChef = ChefRecordVariant (toEnum (adjustChef i))
     |  otherwise = maxBound
     where
       -- inclusive bounds for each type
       minBoundTag = fromEnum (minBound :: TagRecordVariant)
       maxBoundTag = fromEnum (maxBound :: TagRecordVariant)
+      minBoundChef = fromEnum (minBound :: ChefRecordVariant) + maxBoundTag + 1
+      maxBoundChef = fromEnum (maxBound :: ChefRecordVariant) + maxBoundTag + 1
       adjustTag j = j - 0 -- maxBoundTag + 1
+      adjustChef j = j - (maxBoundTag + 1)
 
 instance Bounded ContentRecordVariant where
   minBound = TagRecordVariant TagVariantChef
-  maxBound = TagRecordVariant TagVariantMeal
+  maxBound = ChefRecordVariant ChefVariantMenu
 
 instance Arbitrary ContentRecordVariant where
   arbitrary = oneof
     [ TagRecordVariant <$> arbitrary
+    , ChefRecordVariant <$> arbitrary
     ]
 
 instance Hashable ContentRecordVariant
@@ -119,12 +165,14 @@ instance Hashable ContentRecordVariant
 instance ToJSON ContentRecordVariant where
   toJSON x = case x of
     TagRecordVariant y -> object ["tagVariant" .= y]
+    ChefRecordVariant y -> object ["chefVariant" .= y]
 
 instance FromJSON ContentRecordVariant where
   parseJSON json = case json of
     Object o -> do
       let tag = TagRecordVariant <$> o .: "tagVariant"
-      tag
+          chef = ChefRecordVariant <$> o .: "chefVariant"
+      tag <|> chef
     _ -> typeMismatch "ContentRecordVariant" json
 
 
@@ -184,28 +232,70 @@ tagRecordVariant x = case x of
 
 
 
+data ChefRecord
+  = ChefRecordChef GetSetChef
+  | ChefRecordMeal MealSettings
+  | ChefRecordMenu MenuSettings
+  deriving (Eq, Show, Generic)
+derivePersistFieldJSON "ChefRecord"
+
+instance Arbitrary ChefRecord where
+  arbitrary = oneof
+    [ ChefRecordChef <$> arbitrary
+    , ChefRecordMeal <$> arbitrary
+    , ChefRecordMenu <$> arbitrary
+    ]
+
+instance ToJSON ChefRecord where
+  toJSON x = case x of
+    ChefRecordChef y -> object ["chef" .= y]
+    ChefRecordMeal y -> object ["meal" .= y]
+    ChefRecordMenu y -> object ["menu" .= y]
+
+instance FromJSON ChefRecord where
+  parseJSON json = case json of
+    Object o -> do
+      let chef = ChefRecordChef <$> o .: "chef"
+          meal = ChefRecordMeal <$> o .: "meal"
+          menu = ChefRecordMenu <$> o .: "menu"
+      chef <|> meal <|> menu
+    _ -> typeMismatch "ChefRecord" json
+
+chefRecordVariant :: ChefRecord -> ChefRecordVariant
+chefRecordVariant x = case x of
+  ChefRecordChef _ -> ChefVariantChef
+  ChefRecordMeal _ -> ChefVariantMeal
+  ChefRecordMenu _ -> ChefVariantMenu
+
+
+
 data ContentRecord
   = TagRecord TagRecord
+  | ChefRecord ChefRecord
   deriving (Eq, Show, Generic)
 derivePersistFieldJSON "ContentRecord"
 
 instance Arbitrary ContentRecord where
   arbitrary = oneof
     [ TagRecord <$> arbitrary
+    , ChefRecord <$> arbitrary
     ]
 
 instance ToJSON ContentRecord where
   toJSON x = case x of
     TagRecord y -> object ["tagRecord" .= y]
+    ChefRecord y -> object ["chefRecord" .= y]
 
 instance FromJSON ContentRecord where
   parseJSON json = case json of
     Object o -> do
       let tag = TagRecord <$> o .: "tagRecord"
-      tag
+          chef = ChefRecord <$> o .: "chefRecord"
+      tag <|> chef
     _ -> typeMismatch "ContentRecord" json
 
 
 contentRecordVariant :: ContentRecord -> ContentRecordVariant
 contentRecordVariant x = case x of
   TagRecord y -> TagRecordVariant (tagRecordVariant y)
+  ChefRecord y -> ChefRecordVariant (chefRecordVariant y)
