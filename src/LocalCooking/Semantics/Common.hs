@@ -280,3 +280,7 @@ instance (FromJSON k, FromJSON a) => FromJSON (WithId k a) where
   parseJSON json = case json of
     Object o -> WithId <$> o .: "id" <*> o .: "content"
     _ -> typeMismatch "WithId" json
+
+
+uncurryWithId :: (k -> a -> b) -> WithId k a -> b
+uncurryWithId f (WithId k a) = f k a
