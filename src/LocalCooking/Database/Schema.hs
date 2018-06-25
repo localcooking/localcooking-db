@@ -303,7 +303,7 @@ NextImageSource
 -- ** Diets
 
 
-insertIngredient :: Ingredient -> ReaderT SqlBackend (ResourceT IO) ()
+insertIngredient :: Ingredient -> ReaderT SqlBackend IO ()
 insertIngredient (Ingredient name voids) = do
   mEnt <- getBy (UniqueStoredIngredientTag name)
   case mEnt of
@@ -315,7 +315,7 @@ insertIngredient (Ingredient name voids) = do
 
 
 
-deleteIngredient :: IngredientTag -> ReaderT SqlBackend (ResourceT IO) ()
+deleteIngredient :: IngredientTag -> ReaderT SqlBackend IO ()
 deleteIngredient name = do
   mEnt <- getBy (UniqueStoredIngredientTag name)
   case mEnt of
@@ -325,26 +325,26 @@ deleteIngredient name = do
       deleteWhere [IngredientDietViolationIngredientViolator ==. k]
 
 
-getStoredIngredientTagId :: IngredientTag -> ReaderT SqlBackend (ResourceT IO) (Maybe StoredIngredientTagId)
+getStoredIngredientTagId :: IngredientTag -> ReaderT SqlBackend IO (Maybe StoredIngredientTagId)
 getStoredIngredientTagId name = do
   mEnt <- getBy (UniqueStoredIngredientTag name)
   pure ((\(Entity k _) -> k) <$> mEnt)
 
 
-getIngredientTagById :: StoredIngredientTagId -> ReaderT SqlBackend (ResourceT IO) (Maybe IngredientTag)
+getIngredientTagById :: StoredIngredientTagId -> ReaderT SqlBackend IO (Maybe IngredientTag)
 getIngredientTagById ingId = do
   mEnt <- get ingId
   pure $ (\(StoredIngredientTag t) -> t) <$> mEnt
 
 
-getIngredientViolations :: StoredIngredientTagId -> ReaderT SqlBackend (ResourceT IO) [DietTag]
+getIngredientViolations :: StoredIngredientTagId -> ReaderT SqlBackend IO [DietTag]
 getIngredientViolations ingId = do
   xs <- selectList [IngredientDietViolationIngredientViolator ==. ingId] []
   fmap catMaybes $ forM xs $ \(Entity _ (IngredientDietViolation _ d)) ->
     getDietById d
 
 
-getIngredientById :: StoredIngredientTagId -> ReaderT SqlBackend (ResourceT IO) (Maybe Ingredient)
+getIngredientById :: StoredIngredientTagId -> ReaderT SqlBackend IO (Maybe Ingredient)
 getIngredientById ingId = do
   mName <- getIngredientTagById ingId
   case mName of
@@ -354,7 +354,7 @@ getIngredientById ingId = do
       pure $ Just $ Ingredient name voids
 
 
-getIngredientByName :: IngredientTag -> ReaderT SqlBackend (ResourceT IO) (Maybe Ingredient)
+getIngredientByName :: IngredientTag -> ReaderT SqlBackend IO (Maybe Ingredient)
 getIngredientByName ingName = do
   mIngId <- getStoredIngredientTagId ingName
   case mIngId of
@@ -362,19 +362,19 @@ getIngredientByName ingName = do
     Just ingId -> getIngredientById ingId
 
 
-getIngredients :: ReaderT SqlBackend (ResourceT IO) [Ingredient]
+getIngredients :: ReaderT SqlBackend IO [Ingredient]
 getIngredients = do
   xs <- selectList [] []
   fmap catMaybes $ forM xs $ \(Entity k _) ->
     getIngredientById k
 
 
-insertDietTag :: DietTag -> ReaderT SqlBackend (ResourceT IO) ()
+insertDietTag :: DietTag -> ReaderT SqlBackend IO ()
 insertDietTag name =
   insert_ (StoredDietTag name)
 
 
-registerViolation :: IngredientTag -> DietTag -> ReaderT SqlBackend (ResourceT IO) Bool
+registerViolation :: IngredientTag -> DietTag -> ReaderT SqlBackend IO Bool
 registerViolation name diet = do
   mIngId <- getStoredIngredientTagId name
   mDietId <- getDietId diet
@@ -385,7 +385,7 @@ registerViolation name diet = do
       pure True
 
 
-setViolations :: IngredientTag -> [DietTag] -> ReaderT SqlBackend (ResourceT IO) Bool
+setViolations :: IngredientTag -> [DietTag] -> ReaderT SqlBackend IO Bool
 setViolations name diets = do
   mIngId <- getStoredIngredientTagId name
   case mIngId of
@@ -404,7 +404,7 @@ setViolations name diets = do
       pure True
 
 
-deleteDietTag :: DietTag -> ReaderT SqlBackend (ResourceT IO) ()
+deleteDietTag :: DietTag -> ReaderT SqlBackend IO ()
 deleteDietTag tag = do
   mEnt <- getBy (UniqueStoredDietTag tag)
   case mEnt of
@@ -415,20 +415,20 @@ deleteDietTag tag = do
       forM_ xs $ \(Entity k' _) -> delete k'
 
 
-getDietId :: DietTag -> ReaderT SqlBackend (ResourceT IO) (Maybe StoredDietTagId)
+getDietId :: DietTag -> ReaderT SqlBackend IO (Maybe StoredDietTagId)
 getDietId tag = do
   mEnt <- getBy (UniqueStoredDietTag tag)
   pure ((\(Entity k _) -> k) <$> mEnt)
 
 
-getDietById :: StoredDietTagId -> ReaderT SqlBackend (ResourceT IO) (Maybe DietTag)
+getDietById :: StoredDietTagId -> ReaderT SqlBackend IO (Maybe DietTag)
 getDietById tagId = do
   mEnt <- get tagId
   pure $ (\(StoredDietTag t) -> t) <$> mEnt
 
 
 
-getDiets :: ReaderT SqlBackend (ResourceT IO) [DietTag]
+getDiets :: ReaderT SqlBackend IO [DietTag]
 getDiets = do
   xs <- selectList [] []
   pure $ (\(Entity _ (StoredDietTag x)) -> x) <$> xs
@@ -436,7 +436,7 @@ getDiets = do
 
 -- ** Semantics
 
-getChefId :: Permalink -> ReaderT SqlBackend (ResourceT IO) (Maybe StoredChefId)
+getChefId :: Permalink -> ReaderT SqlBackend IO (Maybe StoredChefId)
 getChefId permalink = do
   mEnt <- getBy (UniqueChefPermalink permalink)
   case mEnt of
@@ -444,7 +444,7 @@ getChefId permalink = do
     Just (Entity k _) -> pure (Just k)
 
 
-getMenuId :: Permalink -> Day -> ReaderT SqlBackend (ResourceT IO) (Maybe StoredMenuId)
+getMenuId :: Permalink -> Day -> ReaderT SqlBackend IO (Maybe StoredMenuId)
 getMenuId permalink deadline = do
   mChef <- getBy (UniqueChefPermalink permalink)
   case mChef of
@@ -456,7 +456,7 @@ getMenuId permalink deadline = do
         Just (Entity k _) -> pure (Just k)
 
 
-getMealId :: Permalink -> Day -> Permalink -> ReaderT SqlBackend (ResourceT IO) (Maybe StoredMealId)
+getMealId :: Permalink -> Day -> Permalink -> ReaderT SqlBackend IO (Maybe StoredMealId)
 getMealId chefPermalink deadline mealPermalink = do
   mChef <- getBy (UniqueChefPermalink chefPermalink)
   case mChef of
@@ -474,7 +474,7 @@ getMealId chefPermalink deadline mealPermalink = do
 
 -- ** Admin
 
-addRole :: StoredUserId -> UserRole -> ReaderT SqlBackend (ResourceT IO) ()
+addRole :: StoredUserId -> UserRole -> ReaderT SqlBackend IO ()
 addRole userId userRole = do
   mUserRoleEnt <- getBy (UniqueUserRole userRole userId)
   case mUserRoleEnt of
@@ -482,7 +482,7 @@ addRole userId userRole = do
     Nothing -> insert_ (UserRoleStored userRole userId)
 
 
-delRole :: StoredUserId -> UserRole -> ReaderT SqlBackend (ResourceT IO) ()
+delRole :: StoredUserId -> UserRole -> ReaderT SqlBackend IO ()
 delRole userId userRole = do
   mUserRoleEnt <- getBy (UniqueUserRole userRole userId)
   case mUserRoleEnt of
@@ -490,7 +490,7 @@ delRole userId userRole = do
     Just (Entity userRoleKey _) -> delete userRoleKey
 
 
-hasRole :: StoredUserId -> UserRole -> ReaderT SqlBackend (ResourceT IO) Bool
+hasRole :: StoredUserId -> UserRole -> ReaderT SqlBackend IO Bool
 hasRole userId userRole = do
   mUserRoleEnt <- getBy (UniqueUserRole userRole userId)
   case mUserRoleEnt of
@@ -498,7 +498,7 @@ hasRole userId userRole = do
     Just _  -> pure True
 
 
-getRoles :: StoredUserId -> ReaderT SqlBackend (ResourceT IO) [UserRole]
+getRoles :: StoredUserId -> ReaderT SqlBackend IO [UserRole]
 getRoles userId = do
   userRoleEnts <- selectList [UserRoleStoredUserRoleOwner ==. userId] []
   pure ((\(Entity _ (UserRoleStored x _)) -> x) <$> userRoleEnts)
@@ -507,7 +507,7 @@ getRoles userId = do
 -- ** System
 
 -- | Effectfully obtains the previous, unique image source name.
-nextImageSource :: ReaderT SqlBackend (ResourceT IO) ImageSource
+nextImageSource :: ReaderT SqlBackend IO ImageSource
 nextImageSource = do
   mEnt <- selectFirst [] []
   case mEnt of
@@ -518,7 +518,7 @@ nextImageSource = do
       update imgSrcId [NextImageSourceNextImageSource =. (succ n)]
       pure n
 
-getPasswordSalt :: ReaderT SqlBackend (ResourceT IO) HashedPassword
+getPasswordSalt :: ReaderT SqlBackend IO HashedPassword
 getPasswordSalt = do
   mSalt <- selectFirst [] []
   case mSalt of
@@ -691,9 +691,6 @@ instance FromJSON (EntityField UserRoleStored (Key UserRoleStored)) where
     where
       fail' = typeMismatch "EntityField User" json
 
-
--- instance Arbitrary RecordSubmissionApprovalId where
---   arbitrary = toSqlKey <$> arbitrary
 
 
 instance Hashable (Key PasswordSalt) where
