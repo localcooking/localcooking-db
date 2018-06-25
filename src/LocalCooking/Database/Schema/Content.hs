@@ -15,8 +15,7 @@ import LocalCooking.Database.Schema (StoredEditorId, StoredUserId)
 import LocalCooking.Semantics.ContentRecord (ContentRecord, ContentRecordVariant)
 
 import Data.Time (UTCTime)
-import Control.Applicative ((<|>))
-import Database.Persist.Sql (SqlBackend, toSqlKey)
+import Database.Persist.Sql (toSqlKey)
 import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)
 import Test.QuickCheck (Arbitrary (..))
 

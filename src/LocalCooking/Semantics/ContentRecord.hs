@@ -9,8 +9,7 @@ module LocalCooking.Semantics.ContentRecord where
 
 import LocalCooking.Semantics.Common (WithId)
 import LocalCooking.Semantics.Chef (GetSetChef, MealSettings, MenuSettings)
-import LocalCooking.Database.Schema (StoredEditorId, StoredMenuId)
-import LocalCooking.Common.User.Name (Name)
+import LocalCooking.Database.Schema (StoredMenuId, StoredMealId)
 import LocalCooking.Common.Tag.Chef (ChefTag)
 import LocalCooking.Common.Tag.Culture (CultureTag)
 import LocalCooking.Common.Tag.Diet (DietTag)
@@ -235,43 +234,48 @@ tagRecordVariant x = case x of
 
 data ChefRecord
   = ChefRecordChef GetSetChef
-  | ChefRecordMeal MealSettings
   | ChefRecordSetMenu (WithId StoredMenuId MenuSettings)
   | ChefRecordNewMenu MenuSettings
+  | ChefRecordSetMeal (WithId StoredMenuId (WithId StoredMealId MealSettings))
+  | ChefRecordNewMeal (WithId StoredMenuId MealSettings)
   deriving (Eq, Show, Generic)
 derivePersistFieldJSON "ChefRecord"
 
 instance Arbitrary ChefRecord where
   arbitrary = oneof
     [ ChefRecordChef <$> arbitrary
-    , ChefRecordMeal <$> arbitrary
     , ChefRecordSetMenu <$> arbitrary
     , ChefRecordNewMenu <$> arbitrary
+    , ChefRecordSetMeal <$> arbitrary
+    , ChefRecordNewMeal <$> arbitrary
     ]
 
 instance ToJSON ChefRecord where
   toJSON x = case x of
     ChefRecordChef y -> object ["chef" .= y]
-    ChefRecordMeal y -> object ["meal" .= y]
     ChefRecordSetMenu y -> object ["setMenu" .= y]
     ChefRecordNewMenu y -> object ["newMenu" .= y]
+    ChefRecordSetMeal y -> object ["setMenu" .= y]
+    ChefRecordNewMeal y -> object ["newMenu" .= y]
 
 instance FromJSON ChefRecord where
   parseJSON json = case json of
     Object o -> do
       let chef = ChefRecordChef <$> o .: "chef"
-          meal = ChefRecordMeal <$> o .: "meal"
           setMenu = ChefRecordSetMenu <$> o .: "setMenu"
           newMenu = ChefRecordNewMenu <$> o .: "newMenu"
-      chef <|> meal <|> setMenu <|> newMenu
+          setMeal = ChefRecordSetMeal <$> o .: "setMenu"
+          newMeal = ChefRecordNewMeal <$> o .: "newMenu"
+      chef <|> setMenu <|> newMenu <|> setMeal <|> newMeal
     _ -> typeMismatch "ChefRecord" json
 
 chefRecordVariant :: ChefRecord -> ChefRecordVariant
 chefRecordVariant x = case x of
   ChefRecordChef _ -> ChefVariantChef
-  ChefRecordMeal _ -> ChefVariantMeal
   ChefRecordSetMenu _ -> ChefVariantMenu
   ChefRecordNewMenu _ -> ChefVariantMenu
+  ChefRecordSetMeal _ -> ChefVariantMeal
+  ChefRecordNewMeal _ -> ChefVariantMeal
 
 
 

@@ -8,26 +8,13 @@
 module LocalCooking.Semantics.Content where
 
 import LocalCooking.Semantics.ContentRecord (ContentRecordVariant)
-import LocalCooking.Database.Schema (StoredEditorId)
 import LocalCooking.Database.Schema.Content (RecordSubmissionApprovalId)
 import LocalCooking.Common.User.Name (Name)
-import LocalCooking.Common.Tag.Chef (ChefTag)
-import LocalCooking.Common.Tag.Culture (CultureTag)
-import LocalCooking.Common.Tag.Diet (DietTag)
-import LocalCooking.Common.Tag.Farm (FarmTag)
-import LocalCooking.Common.Tag.Ingredient (IngredientTag)
-import LocalCooking.Common.Tag.Meal (MealTag)
 
-import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object, String), (.=), object, (.:))
+import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object), (.=), object, (.:))
 import Data.Aeson.Types (typeMismatch)
-import Data.Aeson.Attoparsec (attoAeson)
-import Data.Attoparsec.Text (Parser, string)
-import Data.Hashable (Hashable)
-import Control.Applicative ((<|>))
-import Database.Persist.TH (derivePersistFieldJSON)
 import GHC.Generics (Generic)
 import Test.QuickCheck (Arbitrary (..))
-import Test.QuickCheck.Gen (oneof)
 import Test.QuickCheck.Instances ()
 
 
