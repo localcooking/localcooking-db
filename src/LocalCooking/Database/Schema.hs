@@ -41,7 +41,6 @@ import Data.Maybe (catMaybes)
 import Text.EmailAddress (EmailAddress)
 import Control.Monad (forM_, forM, void)
 import Control.Monad.Reader (ReaderT)
-import Control.Monad.Trans.Resource (ResourceT)
 import Control.Monad.IO.Class (liftIO)
 import Database.Persist (Entity (..), (=.), (==.))
 import Database.Persist.Class
