@@ -187,6 +187,7 @@ data ConfirmEmailError
   = ConfirmEmailTokenNonexistent
   | ConfirmEmailUserNonexistent
   | ConfirmEmailOk
+  deriving (Eq, Show, Generic)
 
 instance Arbitrary ConfirmEmailError where
   arbitrary = oneof

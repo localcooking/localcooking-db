@@ -12,6 +12,7 @@
 module LocalCooking.Database.Schema.Content where
 
 import LocalCooking.Database.Schema (StoredEditorId, StoredUserId)
+import qualified LocalCooking.Database.Schema as Schema
 import LocalCooking.Semantics.ContentRecord (ContentRecord, ContentRecordVariant)
 
 import Data.Time (UTCTime)
