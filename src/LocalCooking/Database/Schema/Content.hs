@@ -44,6 +44,7 @@ StoredRecordSubmission
     storedRecordSubmissionAuthor StoredUserId
     storedRecordSubmissionTimestamp UTCTime
     storedRecordSubmission ContentRecord
+    storedRecordSubmissionVariant ContentRecordVariant
     deriving Eq Show
 
 RecordSubmissionApproval
