@@ -81,16 +81,16 @@ tagRecordVariantParser = do
 
 data ChefRecordVariant
   = ChefVariantChef
-  | ChefVariantMeal
   | ChefVariantMenu
+  | ChefVariantMeal
   deriving (Eq, Ord, Enum, Bounded, Show, Read, Generic)
 derivePersistFieldJSON "ChefRecordVariant"
 
 instance Arbitrary ChefRecordVariant where
   arbitrary = oneof
     [ pure ChefVariantChef
-    , pure ChefVariantMeal
     , pure ChefVariantMenu
+    , pure ChefVariantMeal
     ]
 
 instance Hashable ChefRecordVariant
@@ -98,8 +98,8 @@ instance Hashable ChefRecordVariant
 instance ToJSON ChefRecordVariant where
   toJSON x = String $ case x of
     ChefVariantChef -> "chefChef"
-    ChefVariantMeal -> "mealChef"
     ChefVariantMenu -> "menuChef"
+    ChefVariantMeal -> "mealChef"
 
 instance FromJSON ChefRecordVariant where
   parseJSON = attoAeson chefRecordVariantParser
@@ -107,9 +107,9 @@ instance FromJSON ChefRecordVariant where
 chefRecordVariantParser :: Parser ChefRecordVariant
 chefRecordVariantParser = do
   let chef = ChefVariantChef <$ string "chefChef"
-      meal = ChefVariantMeal <$ string "mealChef"
       menu = ChefVariantMenu <$ string "menuChef"
-  chef <|> meal <|> menu
+      meal = ChefVariantMeal <$ string "mealChef"
+  chef <|> menu <|> meal
 
 
 
