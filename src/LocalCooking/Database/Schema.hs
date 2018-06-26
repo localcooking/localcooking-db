@@ -50,7 +50,6 @@ import Database.Persist.Class
 import Database.Persist.Sql (SqlBackend, toSqlKey)
 import Database.Persist.TH (share, persistLowerCase, mkPersist, sqlSettings, mkMigrate)
 import Test.QuickCheck (Arbitrary (..))
-import Unsafe.Coerce (unsafeCoerce)
 import Crypto.Saltine.Core.Utils (randomByteString)
 
 
