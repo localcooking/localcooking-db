@@ -29,28 +29,28 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 
 FIXME should be total for all content record variants
 RecordSubmissionPolicy
-    recordSubmissionPolicyVariant ContentRecordVariant
-    recordSubmissionPolicyAdditional Int
-    UniqueSubmissionPolicyVariant recordSubmissionPolicyVariant
+    variant ContentRecordVariant
+    additional Int
+    UniqueSubmissionPolicyVariant variant
     deriving Eq Show
 
 RecordAssignedSubmissionPolicy
-    recordAssignedSubmissionPolicy RecordSubmissionPolicyId
-    recordAssignedSubmissionPolicyEditor StoredEditorId
-    UniqueAssignedSubmissionPolicy recordAssignedSubmissionPolicy recordAssignedSubmissionPolicyEditor
+    policy RecordSubmissionPolicyId
+    editor StoredEditorId
+    UniqueAssignedSubmissionPolicy policy editor
     deriving Eq Show
 
 StoredRecordSubmission
-    storedRecordSubmissionAuthor StoredUserId
-    storedRecordSubmissionTimestamp UTCTime
-    storedRecordSubmission ContentRecord
-    storedRecordSubmissionVariant ContentRecordVariant
+    author StoredUserId
+    timestamp UTCTime
+    record ContentRecord
+    variant ContentRecordVariant
     deriving Eq Show
 
 RecordSubmissionApproval
-    recordSubmissionApprovalRecord StoredRecordSubmissionId
-    recordSubmissionApprovalEditor StoredEditorId
-    UniqueSubmissionApproval recordSubmissionApprovalRecord recordSubmissionApprovalEditor
+    record StoredRecordSubmissionId
+    editor StoredEditorId
+    UniqueSubmissionApproval record editor
     deriving Eq Show
 |]
 

@@ -68,230 +68,230 @@ StoredUser
     deriving Eq Show
 
 FacebookUserAccessTokenStored
-    facebookUserAccessToken FacebookUserAccessToken
-    facebookUserDetails FacebookUserDetailsId
-    UniqueFacebookUserAccessToken facebookUserAccessToken
-    FacebookUserAccessTokenOwner facebookUserDetails
+    accessToken FacebookUserAccessToken
+    userDetails FacebookUserDetailsId
+    UniqueFacebookUserAccessToken accessToken
+    UniqueFacebookUserAccessTokenOwner userDetails
     deriving Eq Show
 
 FacebookUserDetails
-    facebookUserId FacebookUserId
-    facebookUserOwner StoredUserId
-    UniqueFacebookUserId facebookUserId
-    FacebookUserDetailsOwner facebookUserOwner
+    fbUserId FacebookUserId
+    owner StoredUserId
+    UniqueFacebookUserId fbUserId
+    UniqueFacebookUserDetailsOwner owner
     deriving Eq Show
 
 UserRoleStored
-    userRole UserRole
-    userRoleOwner StoredUserId
-    UniqueUserRole userRole userRoleOwner
+    role UserRole
+    owner StoredUserId
+    UniqueUserRole role owner
     deriving Eq Show
 
 -- ** Customer User
 
 StoredCustomer
-    storedCustomerOwner StoredUserId
-    storedCustomerName Name
-    storedCustomerAddress USAAddress
-    UniqueCustomer storedCustomerOwner
+    owner StoredUserId
+    name Name
+    address USAAddress
+    UniqueCustomer owner
     deriving Eq Show
 
 StoredDietPreference
-    dietPreferenceOwner StoredCustomerId
-    dietPreferenceDiet  StoredDietTagId
-    UniqueDietPreference dietPreferenceOwner dietPreferenceDiet
+    owner StoredCustomerId
+    diet  StoredDietTagId
+    UniqueDietPreference owner diet
     deriving Eq Show
 
 StoredAllergy
-    allergyOwner StoredCustomerId
-    allergy      StoredIngredientTagId
-    UniqueAllergy allergyOwner allergy
+    owner   StoredCustomerId
+    allergy StoredIngredientTagId
+    UniqueAllergy owner allergy
     deriving Eq Show
 
 -- ** Chef User
 
 StoredChef
-    storedChefOwner StoredUserId
-    storedChefName Name
-    storedChefPermalink Permalink
-    storedChefBio MarkdownText
-    storedChefImages [ImageSource]
-    storedChefAvatar ImageSource
-    UniqueChefOwner storedChefOwner
-    UniqueChefPermalink storedChefPermalink
+    owner StoredUserId
+    name Name
+    permalink Permalink
+    bio MarkdownText
+    images [ImageSource]
+    avatar ImageSource
+    UniqueChefOwner owner
+    UniqueChefPermalink permalink
     deriving Eq Show
 
 ChefTagRelation
-    chefTagChef StoredChefId
-    chefTagChefTag StoredChefTagId
-    UniqueChefTag chefTagChef chefTagChefTag
+    chef StoredChefId
+    tag StoredChefTagId
+    UniqueChefTag chef tag
     deriving Eq Show
 
 -- ** Farmer User
 
 StoredFarmer
-    storedFarmerOwner StoredUserId
-    storedFarmerName Name
-    storedFarmerPermalink Permalink
-    storedFarmerImages [ImageSource]
-    storedFarmerAvatar ImageSource
-    storedFarmerBio MarkdownText
-    UniqueFarmerOwner storedFarmerOwner
-    UniqueFarmerPermalink storedFarmerPermalink
+    owner StoredUserId
+    name Name
+    permalink Permalink
+    images [ImageSource]
+    avatar ImageSource
+    bio MarkdownText
+    UniqueFarmerOwner owner
+    UniqueFarmerPermalink permalink
     deriving Eq Show
 
 FarmTagRelation
-    farmTagFarmer StoredFarmerId
-    farmTagFarmTag StoredFarmTagId
-    UniqueFarmTag farmTagFarmer farmTagFarmTag
+    farmer StoredFarmerId
+    tag StoredFarmTagId
+    UniqueFarmTag farmer tag
     deriving Eq Show
 
 -- ** Editor User
 
 StoredEditor
-    storedEditorOwner StoredUserId
-    storedEditorName Name
-    UniqueEditor storedEditorOwner
+    owner StoredUserId
+    name Name
+    UniqueEditor owner
     deriving Eq Show
 
 
 -- * Meal
 
 StoredMeal
-    storedMealTitle Text
-    storedMealPermalink Permalink
-    storedMealMenu StoredMenuId
-    storedMealHeading Text
-    storedMealDescription MarkdownText
-    storedMealInstructions MarkdownText
-    storedMealImages [ImageSource]
-    storedMealPrice Price
-    UniqueMealPermalink storedMealMenu storedMealPermalink
+    title Text
+    permalink Permalink
+    menu StoredMenuId
+    heading Text
+    description MarkdownText
+    instructions MarkdownText
+    images [ImageSource]
+    price Price
+    UniqueMealPermalink menu permalink
     deriving Eq Show
 
 MealIngredient
-    mealIngredientMeal StoredMealId
-    mealIngredientIngredient StoredIngredientTagId
-    UniqueMealIngredient mealIngredientMeal mealIngredientIngredient
+    meal StoredMealId
+    ingredient StoredIngredientTagId
+    UniqueMealIngredient meal ingredient
     deriving Eq Show
 
 MealTagRelation
-    mealTagMeal StoredMealId
-    mealTagMealTag StoredMealTagId
-    UniqueMealTag mealTagMeal mealTagMealTag
+    meal StoredMealId
+    tag StoredMealTagId
+    UniqueMealTag meal tag
     deriving Eq Show
 
 
 -- * Menu
 
 StoredMenu
-    storedMenuPublished Day Maybe
-    storedMenuDeadline Day
-    storedMenuHeading Text
-    storedMenuDescription MarkdownText
-    storedMenuImages [ImageSource]
-    storedMenuAuthor StoredChefId
-    UniqueMenuDeadline storedMenuAuthor storedMenuDeadline
+    published Day Maybe
+    deadline Day
+    heading Text
+    description MarkdownText
+    images [ImageSource]
+    author StoredChefId
+    UniqueMenuDeadline author deadline
     deriving Eq Show
 
 MenuTagRelation
-    menuTagMenu StoredMenuId
-    menuTagMealTag StoredMealTagId
-    UniqueMenuTag menuTagMenu menuTagMealTag
+    menu StoredMenuId
+    tag StoredMealTagId
+    UniqueMenuTag menu tag
     deriving Eq Show
 
 
 -- * Diets
 
 IngredientDietViolation
-    ingredientViolator StoredIngredientTagId
-    dietViolated StoredDietTagId
-    UniqueViolation ingredientViolator dietViolated
+    violator StoredIngredientTagId
+    violated StoredDietTagId
+    UniqueViolation violator violated
     deriving Eq Show
 
 
 -- * Review
 
 StoredReview
-    storedReviewOrder StoredOrderId
-    storedReviewChef StoredChefId
-    storedReviewMeal StoredMealId
-    storedReviewAuthor StoredCustomerId
-    storedReviewRating Rating
-    storedReviewSubmitted UTCTime
-    storedReviewHeading Text
-    storedReviewBody MarkdownText
-    storedReviewImages [ImageSource]
-    UniqueReviewAuthor storedReviewAuthor storedReviewOrder
+    order StoredOrderId
+    chef StoredChefId
+    meal StoredMealId
+    author StoredCustomerId
+    rating Rating
+    submitted UTCTime
+    heading Text
+    body MarkdownText
+    images [ImageSource]
+    UniqueReviewAuthor author order
     deriving Eq Show
 
 
 -- * Orders
 
 StoredOrder
-    storedOrderCustomer StoredCustomerId
-    storedOrderMeal StoredMealId
-    storedOrderMenu StoredMenuId
-    storedOrderChef StoredChefId
-    storedOrderVolume Int
-    storedOrderProgress OrderProgress
-    storedOrderTime UTCTime
+    customer StoredCustomerId
+    meal StoredMealId
+    menu StoredMenuId
+    chef StoredChefId
+    volume Int
+    progress OrderProgress
+    time UTCTime
     deriving Eq Show
 
 
 -- * Cart
 
 CartRelation
-    cartRelationCustomer StoredUserId
-    cartRelationMeal StoredMealId
-    cartRelationVolume Int
-    cartRelationAdded UTCTime
-    UniqueCartRelation cartRelationCustomer cartRelationMeal
+    customer StoredUserId
+    meal StoredMealId
+    volume Int
+    added UTCTime
+    UniqueCartRelation customer meal
     deriving Eq Show
 
 
 -- * Tags
 
 StoredChefTag
-    chefTag ChefTag
-    UniqueStoredChefTag chefTag
+    tag ChefTag
+    UniqueStoredChefTag tag
     deriving Eq Show
 
 StoredCultureTag
-    cultureTag CultureTag
-    UniqueStoredCultureTag cultureTag
+    tag CultureTag
+    UniqueStoredCultureTag tag
     deriving Eq Show
 
 StoredDietTag
-    dietTag DietTag
-    UniqueStoredDietTag dietTag
+    tag DietTag
+    UniqueStoredDietTag tag
     deriving Eq Show
 
 StoredFarmTag
-    farmTag FarmTag
-    UniqueStoredFarmTag farmTag
+    tag FarmTag
+    UniqueStoredFarmTag tag
     deriving Eq Show
 
 StoredIngredientTag
-    ingredientTag IngredientTag
-    UniqueStoredIngredientTag ingredientTag
+    tag IngredientTag
+    UniqueStoredIngredientTag tag
     deriving Eq Show
 
 StoredMealTag
-    mealTag MealTag
-    UniqueStoredMealTag mealTag
+    tag MealTag
+    UniqueStoredMealTag tag
     deriving Eq Show
 
 
 -- * System State
 
 PasswordSalt
-    passwordSalt HashedPassword
-    UniquePasswordSalt passwordSalt
+    salt HashedPassword
+    UniquePasswordSalt salt
     deriving Eq Show
 
 NextImageSource
-    nextImageSource ImageSource
+    link ImageSource
     deriving Eq Show
 |]
 
@@ -321,7 +321,7 @@ deleteIngredient name = do
     Nothing -> pure ()
     Just (Entity k _) -> do
       delete k
-      deleteWhere [IngredientDietViolationIngredientViolator ==. k]
+      deleteWhere [IngredientDietViolationViolator ==. k]
 
 
 getStoredIngredientTagId :: IngredientTag -> ReaderT SqlBackend IO (Maybe StoredIngredientTagId)
@@ -338,7 +338,7 @@ getIngredientTagById ingId = do
 
 getIngredientViolations :: StoredIngredientTagId -> ReaderT SqlBackend IO [DietTag]
 getIngredientViolations ingId = do
-  xs <- selectList [IngredientDietViolationIngredientViolator ==. ingId] []
+  xs <- selectList [IngredientDietViolationViolator ==. ingId] []
   fmap catMaybes $ forM xs $ \(Entity _ (IngredientDietViolation _ d)) ->
     getDietById d
 
@@ -391,13 +391,13 @@ setViolations name diets = do
     Nothing -> pure False
     Just ingId -> do
       oldDietIds <- fmap (fmap (\(Entity _ (IngredientDietViolation _ k)) -> k))
-                  $ selectList [IngredientDietViolationIngredientViolator ==. ingId] []
+                  $ selectList [IngredientDietViolationViolator ==. ingId] []
       newDietIds <- fmap catMaybes $ forM diets getDietId
       let toRemove = Set.fromList oldDietIds `Set.difference` Set.fromList newDietIds
           toAdd = Set.fromList newDietIds `Set.difference` Set.fromList oldDietIds
       forM_ toRemove $ \dietId -> deleteWhere
-        [ IngredientDietViolationIngredientViolator ==. ingId
-        , IngredientDietViolationDietViolated ==. dietId
+        [ IngredientDietViolationViolator ==. ingId
+        , IngredientDietViolationViolated ==. dietId
         ]
       forM_ toAdd $ \dietId -> insert_ (IngredientDietViolation ingId dietId)
       pure True
@@ -410,7 +410,7 @@ deleteDietTag tag = do
     Nothing -> pure ()
     Just (Entity k _) -> do
       delete k
-      xs <- selectList [IngredientDietViolationDietViolated ==. k] []
+      xs <- selectList [IngredientDietViolationViolated ==. k] []
       forM_ xs $ \(Entity k' _) -> delete k'
 
 
@@ -499,7 +499,7 @@ hasRole userId userRole = do
 
 getRoles :: StoredUserId -> ReaderT SqlBackend IO [UserRole]
 getRoles userId = do
-  userRoleEnts <- selectList [UserRoleStoredUserRoleOwner ==. userId] []
+  userRoleEnts <- selectList [UserRoleStoredOwner ==. userId] []
   pure ((\(Entity _ (UserRoleStored x _)) -> x) <$> userRoleEnts)
 
 
@@ -514,7 +514,7 @@ nextImageSource = do
       insert_ (NextImageSource 1)
       pure 0
     Just (Entity imgSrcId (NextImageSource n)) -> do
-      update imgSrcId [NextImageSourceNextImageSource =. (succ n)]
+      update imgSrcId [NextImageSourceLink =. (succ n)]
       pure n
 
 getPasswordSalt :: ReaderT SqlBackend IO HashedPassword
@@ -650,23 +650,23 @@ instance Hashable (Key UserRoleStored) where
 
 instance Eq (EntityField UserRoleStored typ) where
   x == y = case x of
-    UserRoleStoredUserRole -> case y of
-      UserRoleStoredUserRole -> True
-    UserRoleStoredUserRoleOwner -> case y of
-      UserRoleStoredUserRoleOwner -> True
+    UserRoleStoredRole -> case y of
+      UserRoleStoredRole -> True
+    UserRoleStoredOwner -> case y of
+      UserRoleStoredOwner -> True
     UserRoleStoredId -> case y of
       UserRoleStoredId -> True
 
 instance ToJSON (EntityField UserRoleStored typ) where
   toJSON x = case x of
-    UserRoleStoredUserRole -> String "userRole"
-    UserRoleStoredUserRoleOwner -> String "userRoleOwner"
+    UserRoleStoredRole -> String "userRole"
+    UserRoleStoredOwner -> String "userRoleOwner"
     UserRoleStoredId -> String "userRoleStoredId"
 
 instance FromJSON (EntityField UserRoleStored UserRole) where
   parseJSON json = case json of
     String s
-      | s == "userRole" -> pure UserRoleStoredUserRole
+      | s == "userRole" -> pure UserRoleStoredRole
       | otherwise -> fail'
     _ -> fail'
     where
@@ -675,7 +675,7 @@ instance FromJSON (EntityField UserRoleStored UserRole) where
 instance FromJSON (EntityField UserRoleStored StoredUserId) where
   parseJSON json = case json of
     String s
-      | s == "userRoleOwner" -> pure UserRoleStoredUserRoleOwner
+      | s == "userRoleOwner" -> pure UserRoleStoredOwner
       | otherwise -> fail'
     _ -> fail'
     where
@@ -697,20 +697,20 @@ instance Hashable (Key PasswordSalt) where
 
 instance Eq (EntityField PasswordSalt typ) where
   x == y = case x of
-    PasswordSaltPasswordSalt -> case y of
-      PasswordSaltPasswordSalt -> True
+    PasswordSaltSalt -> case y of
+      PasswordSaltSalt -> True
     PasswordSaltId -> case y of
       PasswordSaltId -> True
 
 instance ToJSON (EntityField PasswordSalt typ) where
   toJSON x = case x of
-    PasswordSaltPasswordSalt -> String "passwordSalt"
+    PasswordSaltSalt -> String "passwordSalt"
     PasswordSaltId -> String "passwordSaltId"
 
 instance FromJSON (EntityField PasswordSalt HashedPassword) where
   parseJSON json = case json of
     String s
-      | s == "passwordSalt" -> pure PasswordSaltPasswordSalt
+      | s == "passwordSalt" -> pure PasswordSaltSalt
       | otherwise -> fail'
     _ -> fail'
     where
@@ -730,23 +730,23 @@ instance Hashable (Key FacebookUserAccessTokenStored) where
 
 instance Eq (EntityField FacebookUserAccessTokenStored typ) where
   x == y = case x of
-    FacebookUserAccessTokenStoredFacebookUserAccessToken -> case y of
-      FacebookUserAccessTokenStoredFacebookUserAccessToken -> True
-    FacebookUserAccessTokenStoredFacebookUserDetails -> case y of
-      FacebookUserAccessTokenStoredFacebookUserDetails -> True
+    FacebookUserAccessTokenStoredAccessToken -> case y of
+      FacebookUserAccessTokenStoredAccessToken -> True
+    FacebookUserAccessTokenStoredUserDetails -> case y of
+      FacebookUserAccessTokenStoredUserDetails -> True
     FacebookUserAccessTokenStoredId -> case y of
       FacebookUserAccessTokenStoredId -> True
 
 instance ToJSON (EntityField FacebookUserAccessTokenStored typ) where
   toJSON x = case x of
-    FacebookUserAccessTokenStoredFacebookUserAccessToken -> String "facebookUserAccessToken"
-    FacebookUserAccessTokenStoredFacebookUserDetails -> String "facebookUserDetails"
+    FacebookUserAccessTokenStoredAccessToken -> String "facebookUserAccessToken"
+    FacebookUserAccessTokenStoredUserDetails -> String "facebookUserDetails"
     FacebookUserAccessTokenStoredId -> String "facebookUserAccessTokenStoredId"
 
 instance FromJSON (EntityField FacebookUserAccessTokenStored FacebookUserAccessToken) where
   parseJSON json = case json of
     String s
-      | s == "facebookUserAccessToken" -> pure FacebookUserAccessTokenStoredFacebookUserAccessToken
+      | s == "facebookUserAccessToken" -> pure FacebookUserAccessTokenStoredAccessToken
       | otherwise -> fail'
     _ -> fail'
     where
@@ -755,7 +755,7 @@ instance FromJSON (EntityField FacebookUserAccessTokenStored FacebookUserAccessT
 instance FromJSON (EntityField FacebookUserAccessTokenStored FacebookUserDetailsId) where
   parseJSON json = case json of
     String s
-      | s == "facebookUserDetails" -> pure FacebookUserAccessTokenStoredFacebookUserDetails
+      | s == "facebookUserDetails" -> pure FacebookUserAccessTokenStoredUserDetails
       | otherwise -> fail'
     _ -> fail'
     where
@@ -775,23 +775,23 @@ instance Hashable (Key FacebookUserDetails) where
 
 instance Eq (EntityField FacebookUserDetails typ) where
   x == y = case x of
-    FacebookUserDetailsFacebookUserId -> case y of
-      FacebookUserDetailsFacebookUserId -> True
-    FacebookUserDetailsFacebookUserOwner -> case y of
-      FacebookUserDetailsFacebookUserOwner -> True
+    FacebookUserDetailsFbUserId -> case y of
+      FacebookUserDetailsFbUserId -> True
+    FacebookUserDetailsOwner -> case y of
+      FacebookUserDetailsOwner -> True
     FacebookUserDetailsId -> case y of
       FacebookUserDetailsId -> True
 
 instance ToJSON (EntityField FacebookUserDetails typ) where
   toJSON x = case x of
-    FacebookUserDetailsFacebookUserId -> String "facebookUserId"
-    FacebookUserDetailsFacebookUserOwner -> String "facebookUserOwner"
+    FacebookUserDetailsFbUserId -> String "facebookUserId"
+    FacebookUserDetailsOwner -> String "facebookUserOwner"
     FacebookUserDetailsId -> String "facebookUserDetailsId"
 
 instance FromJSON (EntityField FacebookUserDetails FacebookUserId) where
   parseJSON json = case json of
     String s
-      | s == "facebookUserId" -> pure FacebookUserDetailsFacebookUserId
+      | s == "facebookUserId" -> pure FacebookUserDetailsFbUserId
       | otherwise -> fail'
     _ -> fail'
     where
@@ -800,7 +800,7 @@ instance FromJSON (EntityField FacebookUserDetails FacebookUserId) where
 instance FromJSON (EntityField FacebookUserDetails StoredUserId) where
   parseJSON json = case json of
     String s
-      | s == "facebookUserOwner" -> pure FacebookUserDetailsFacebookUserOwner
+      | s == "facebookUserOwner" -> pure FacebookUserDetailsOwner
       | otherwise -> fail'
     _ -> fail'
     where
