@@ -296,7 +296,7 @@ NextImageSource
 
 -- * Blog
 
-BlogPost
+StoredBlogPost
     author StoredUserId
     timestamp UTCTime
     headline Text
