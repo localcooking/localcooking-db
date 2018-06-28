@@ -25,8 +25,39 @@ import Test.QuickCheck.Instances ()
 
 
 
+data BlogPostSynopsis = BlogPostSynopsis
+  { blogPostSynopsisAuthor    :: Name
+  , blogPostSynopsisTimestamp :: UTCTime
+  , blogPostSynopsisHeadline  :: Text
+  , blogPostSynopsisPermalink :: Permalink
+  } deriving (Eq, Show, Generic)
+
+
+instance Arbitrary BlogPostSynopsis where
+  arbitrary = BlogPostSynopsis <$> arbitrary
+                              <*> arbitrary
+                              <*> arbitrary
+                              <*> arbitrary
+
+instance ToJSON BlogPostSynopsis where
+  toJSON BlogPostSynopsis{..} = object
+    [ "author" .= blogPostSynopsisAuthor
+    , "timestamp" .= blogPostSynopsisTimestamp
+    , "headline" .= blogPostSynopsisHeadline
+    , "permalink" .= blogPostSynopsisPermalink
+    ]
+
+instance FromJSON BlogPostSynopsis where
+  parseJSON json = case json of
+    Object o -> BlogPostSynopsis <$> o .: "author"
+                                  <*> o .: "timestamp"
+                                  <*> o .: "headline"
+                                  <*> o .: "permalink"
+    _ -> typeMismatch "BlogPostSynopsis" json
+
+
 data GetBlogPost = GetBlogPost
-  { getBlogPostAuthor    :: StoredUserId
+  { getBlogPostAuthor    :: Name
   , getBlogPostTimestamp :: UTCTime
   , getBlogPostHeadline  :: Text
   , getBlogPostPermalink :: Permalink
