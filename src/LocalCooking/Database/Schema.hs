@@ -292,6 +292,18 @@ PasswordSalt
 NextImageSource
     link ImageSource
     deriving Eq Show
+
+
+-- * Blog
+
+BlogPost
+    author StoredUserId
+    timestamp UTCTime
+    headline Text
+    permalink Permalink
+    content MarkdownText
+    UniqueBlogPost permalink
+
 |]
 
 
