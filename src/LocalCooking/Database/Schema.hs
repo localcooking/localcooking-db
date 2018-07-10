@@ -23,6 +23,7 @@ import LocalCooking.Common.Tag.Farm (FarmTag)
 import LocalCooking.Common.Tag.Ingredient (IngredientTag)
 import LocalCooking.Common.Tag.Meal (MealTag)
 import LocalCooking.Common.Ingredient (Ingredient (..))
+import LocalCooking.Common.Blog (BlogPostVariant, BlogPostPriority, BlogPostCategory)
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
 import Data.Image.Source (ImageSource)
@@ -297,13 +298,27 @@ NextImageSource
 -- * Blog
 
 StoredBlogPost
-    author StoredUserId
+    author StoredEditorId
     timestamp UTCTime
     headline Text
     permalink Permalink
     content MarkdownText
-    UniqueBlogPost permalink
+    variant BlogPostVariant
+    priority BlogPostPriority
+    category' StoredBlogPostCategoryId
+    UniqueBlogPost category' permalink
 
+StoredBlogPostCategory
+    name BlogPostCategory
+    priority BlogPostPriority
+    permalink Permalink
+    UniqueBlogPostCategory permalink
+
+StoredBlogPostPrimary
+    post StoredBlogPostId
+    category StoredBlogPostCategoryId
+    UniquePrimaryBlogPost post
+    UnituePrimaryBlogPostCategory category
 |]
 
 
@@ -583,6 +598,18 @@ instance Arbitrary StoredUserId where
   arbitrary = toSqlKey <$> arbitrary
 
 instance Hashable StoredUserId where
+  hashWithSalt salt x = hashWithSalt salt (toJSON x)
+
+instance Arbitrary StoredBlogPostId where
+  arbitrary = toSqlKey <$> arbitrary
+
+instance Hashable StoredBlogPostId where
+  hashWithSalt salt x = hashWithSalt salt (toJSON x)
+
+instance Arbitrary StoredBlogPostCategoryId where
+  arbitrary = toSqlKey <$> arbitrary
+
+instance Hashable StoredBlogPostCategoryId where
   hashWithSalt salt x = hashWithSalt salt (toJSON x)
 
 instance Eq (EntityField StoredUser typ) where

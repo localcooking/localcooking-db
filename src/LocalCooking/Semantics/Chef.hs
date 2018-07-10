@@ -29,13 +29,17 @@ import Test.QuickCheck.Instances ()
 
 -- unique key is tied to the user who submits it -- StoredUserId is a valid id
 data GetSetChef = GetSetChef
-  { getSetChefName      :: Name
-  , getSetChefPermalink :: Permalink
+  { getSetChefName      :: Maybe Name
+  , getSetChefPermalink :: Maybe Permalink
   , getSetChefImages    :: [ImageSource]
-  , getSetChefAvatar    :: ImageSource
+  , getSetChefAvatar    :: Maybe ImageSource
   , getSetChefBio       :: MarkdownText
   , getSetChefTags      :: [ChefTag]
   } deriving (Eq, Show, Generic)
+
+emptyGetSetChef :: GetSetChef
+emptyGetSetChef = GetSetChef Nothing Nothing [] Nothing "" []
+
 
 
 instance Arbitrary GetSetChef where

@@ -8,7 +8,7 @@ module LocalCooking.Semantics.Admin where
 
 import LocalCooking.Database.Schema (StoredEditorId)
 import LocalCooking.Semantics.Common (User)
-import LocalCooking.Semantics.ContentRecord (ContentRecordVariant)
+import LocalCooking.Semantics.ContentRecord.Variant (ContentRecordVariant)
 import LocalCooking.Common.User.Password (HashedPassword)
 
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (Object), object, (.=), (.:))
