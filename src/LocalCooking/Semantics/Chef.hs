@@ -28,47 +28,84 @@ import Test.QuickCheck.Instances ()
 
 
 -- unique key is tied to the user who submits it -- StoredUserId is a valid id
-data GetSetChef = GetSetChef
-  { getSetChefName      :: Maybe Name
-  , getSetChefPermalink :: Maybe Permalink
-  , getSetChefImages    :: [ImageSource]
-  , getSetChefAvatar    :: Maybe ImageSource
-  , getSetChefBio       :: MarkdownText
-  , getSetChefTags      :: [ChefTag]
+data SetChef = SetChef
+  { setChefName      :: Maybe Name
+  , setChefPermalink :: Maybe Permalink
+  , setChefImages    :: [ImageSource]
+  , setChefAvatar    :: Maybe ImageSource
+  , setChefBio       :: MarkdownText
+  , setChefTags      :: [ChefTag]
   } deriving (Eq, Show, Generic)
 
-emptyGetSetChef :: GetSetChef
-emptyGetSetChef = GetSetChef Nothing Nothing [] Nothing "" []
+emptySetChef :: SetChef
+emptySetChef = SetChef Nothing Nothing [] Nothing "" []
 
+instance Arbitrary SetChef where
+  arbitrary = SetChef <$> arbitrary
+                      <*> arbitrary
+                      <*> arbitrary
+                      <*> arbitrary
+                      <*> arbitrary
+                      <*> arbitrary
 
-
-instance Arbitrary GetSetChef where
-  arbitrary = GetSetChef <$> arbitrary
-                         <*> arbitrary
-                         <*> arbitrary
-                         <*> arbitrary
-                         <*> arbitrary
-                         <*> arbitrary
-
-instance ToJSON GetSetChef where
-  toJSON GetSetChef{..} = object
-    [ "name" .= getSetChefName
-    , "permalink" .= getSetChefPermalink
-    , "images" .= getSetChefImages
-    , "avatar" .= getSetChefAvatar
-    , "bio" .= getSetChefBio
-    , "tags" .= getSetChefTags
+instance ToJSON SetChef where
+  toJSON SetChef{..} = object
+    [ "name" .= setChefName
+    , "permalink" .= setChefPermalink
+    , "images" .= setChefImages
+    , "avatar" .= setChefAvatar
+    , "bio" .= setChefBio
+    , "tags" .= setChefTags
     ]
 
-instance FromJSON GetSetChef where
+instance FromJSON SetChef where
   parseJSON json = case json of
-    Object o -> GetSetChef <$> o .: "name"
-                           <*> o .: "permalink"
-                           <*> o .: "images"
-                           <*> o .: "avatar"
-                           <*> o .: "bio"
-                           <*> o .: "tags"
-    _ -> typeMismatch "GetSetChef" json
+    Object o -> SetChef <$> o .: "name"
+                        <*> o .: "permalink"
+                        <*> o .: "images"
+                        <*> o .: "avatar"
+                        <*> o .: "bio"
+                        <*> o .: "tags"
+    _ -> typeMismatch "SetChef" json
+
+
+data ChefValid = ChefValid
+  { chefValidName      :: Name
+  , chefValidPermalink :: Permalink
+  , chefValidImages    :: [ImageSource]
+  , chefValidAvatar    :: ImageSource
+  , chefValidBio       :: MarkdownText
+  , chefValidTags      :: [ChefTag]
+  } deriving (Eq, Show, Generic)
+
+instance Arbitrary ChefValid where
+  arbitrary = ChefValid <$> arbitrary
+                        <*> arbitrary
+                        <*> arbitrary
+                        <*> arbitrary
+                        <*> arbitrary
+                        <*> arbitrary
+
+instance ToJSON ChefValid where
+  toJSON ChefValid{..} = object
+    [ "name" .= chefValidName
+    , "permalink" .= chefValidPermalink
+    , "images" .= chefValidImages
+    , "avatar" .= chefValidAvatar
+    , "bio" .= chefValidBio
+    , "tags" .= chefValidTags
+    ]
+
+instance FromJSON ChefValid where
+  parseJSON json = case json of
+    Object o -> ChefValid <$> o .: "name"
+                          <*> o .: "permalink"
+                          <*> o .: "images"
+                          <*> o .: "avatar"
+                          <*> o .: "bio"
+                          <*> o .: "tags"
+    _ -> typeMismatch "ChefValid" json
+
 
 
 -- submission with a StoredMealId constitutes an update
