@@ -11,7 +11,7 @@ import LocalCooking.Semantics.ContentRecord.Variant
   ( ContentRecordVariant (..), TagRecordVariant (..), ChefRecordVariant (..), ProfileRecordVariant (..))
 import LocalCooking.Semantics.Common (WithId)
 import LocalCooking.Semantics.Chef (SetChef, MealSettings, MenuSettings)
-import LocalCooking.Semantics.Mitch (GetSetCustomer)
+import LocalCooking.Semantics.Mitch (SetCustomer)
 import LocalCooking.Semantics.Content (SetEditor)
 import LocalCooking.Database.Schema (StoredMenuId, StoredMealId)
 import LocalCooking.Common.Tag.Chef (ChefTag)
@@ -134,7 +134,7 @@ chefRecordVariant x = case x of
 
 data ProfileRecord
   = ProfileRecordChef SetChef
-  | ProfileRecordCustomer GetSetCustomer
+  | ProfileRecordCustomer SetCustomer
   | ProfileRecordEditor SetEditor
   -- TODO farmer restaurant
   deriving (Eq, Show, Generic)

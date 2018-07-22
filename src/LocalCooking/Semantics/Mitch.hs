@@ -427,26 +427,50 @@ instance FromJSON Order where
 
 
 
-data GetSetCustomer = GetSetCustomer
-  { getSetCustomerName    :: Name
-  , getSetCustomerAddress :: USAAddress
+data SetCustomer = SetCustomer
+  { setCustomerName    :: Maybe Name
+  , setCustomerAddress :: Maybe USAAddress
   } deriving (Eq, Show, Generic)
 
-instance Arbitrary GetSetCustomer where
-  arbitrary = GetSetCustomer  <$> arbitrary
-                              <*> arbitrary
+emptySetCustomer :: SetCustomer
+emptySetCustomer = SetCustomer Nothing Nothing
 
-instance ToJSON GetSetCustomer where
-  toJSON GetSetCustomer{..} = object
-    [ "name" .= getSetCustomerName
-    , "address" .= getSetCustomerAddress
+instance Arbitrary SetCustomer where
+  arbitrary = SetCustomer  <$> arbitrary
+                           <*> arbitrary
+
+instance ToJSON SetCustomer where
+  toJSON SetCustomer{..} = object
+    [ "name" .= setCustomerName
+    , "address" .= setCustomerAddress
     ]
 
-instance FromJSON GetSetCustomer where
+instance FromJSON SetCustomer where
   parseJSON json = case json of
-    Object o -> GetSetCustomer  <$> o .: "name"
-                                <*> o .: "address"
-    _ -> typeMismatch "GetSetCustomer" json
+    Object o -> SetCustomer  <$> o .: "name"
+                             <*> o .: "address"
+    _ -> typeMismatch "SetCustomer" json
+
+data CustomerValid = CustomerValid
+  { customerValidName    :: Name
+  , customerValidAddress :: USAAddress
+  } deriving (Eq, Show, Generic)
+
+instance Arbitrary CustomerValid where
+  arbitrary = CustomerValid  <$> arbitrary
+                           <*> arbitrary
+
+instance ToJSON CustomerValid where
+  toJSON CustomerValid{..} = object
+    [ "name" .= customerValidName
+    , "address" .= customerValidAddress
+    ]
+
+instance FromJSON CustomerValid where
+  parseJSON json = case json of
+    Object o -> CustomerValid  <$> o .: "name"
+                             <*> o .: "address"
+    _ -> typeMismatch "CustomerValid" json
 
 newtype Diets = Diets
   { getDiets :: [DietTag]
