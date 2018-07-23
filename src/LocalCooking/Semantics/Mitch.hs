@@ -8,7 +8,7 @@
 
 module LocalCooking.Semantics.Mitch where
 
-import LocalCooking.Database.Schema (StoredReviewId, StoredMealId)
+import LocalCooking.Database.Schema (StoredReviewId, StoredMealId, StoredOrderId)
 import LocalCooking.Common.Rating (Rating)
 import LocalCooking.Common.Tag.Chef (ChefTag)
 import LocalCooking.Common.Tag.Meal (MealTag)
@@ -169,6 +169,34 @@ instance FromJSON Review where
                        <*> o .: "body"
                        <*> o .: "images"
     _ -> typeMismatch "Review" json
+
+data SubmitReview = SubmitReview
+  { submitReviewOrder   :: StoredOrderId
+  , submitReviewRating  :: Rating
+  , submitReviewHeading :: Text
+  , submitReviewBody    :: MarkdownText
+  , submitReviewImages  :: [ImageSource]
+  } deriving (Eq, Show, Generic)
+
+instance ToJSON SubmitReview where
+  toJSON SubmitReview{..} = object
+    [ "order" .= submitReviewOrder
+    , "rating" .= submitReviewRating
+    , "heading" .= submitReviewHeading
+    , "body" .= submitReviewBody
+    , "images" .= submitReviewImages
+    ]
+
+instance FromJSON SubmitReview where
+  parseJSON json = case json of
+    Object o -> SubmitReview
+            <$> o .: "order"
+            <*> o .: "rating"
+            <*> o .: "heading"
+            <*> o .: "body"
+            <*> o .: "images"
+    _ -> typeMismatch "SubmitReview" json
+
 
 
 
@@ -456,6 +484,7 @@ instance FromJSON Chef where
                      <*> o .: "tags"
                      <*> o .: "menus"
     _ -> typeMismatch "Chef" json
+
 
 
 
