@@ -200,8 +200,6 @@ instance FromJSON MenuSettings where
     _ -> typeMismatch "MenuSettings" json
 
 
--- TODO FIXME order timestamp?
--- Only updates are submitted - update order progress.
 data Order = Order
   { orderMeal     :: StoredMealId
   , orderProgress :: OrderProgress

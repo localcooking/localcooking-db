@@ -413,7 +413,7 @@ data Chef = Chef
   , chefActiveOrders :: Int
   , chefTotalOrders  :: Int
   , chefTags         :: [ChefTag]
-  , chefMenus        :: [MenuSynopsis] -- ^ Active menus -- TODO historic menus, too?
+  , chefMenus        :: [MenuSynopsis] -- ^ Active menus -- TODO historic menus, too? Search component*
   } deriving (Eq, Show, Generic)
 
 
