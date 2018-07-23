@@ -308,6 +308,7 @@ StoredBlogPost
     category' StoredBlogPostCategoryId
     UniqueBlogPost category' permalink
 
+-- FIXME author and timestamp
 StoredBlogPostCategory
     name BlogPostCategory
     priority BlogPostPriority
