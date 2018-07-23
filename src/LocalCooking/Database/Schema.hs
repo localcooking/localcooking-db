@@ -317,7 +317,7 @@ StoredBlogPostCategory
 StoredBlogPostPrimary
     post StoredBlogPostId
     category StoredBlogPostCategoryId
-    UniquePrimaryBlogPost post category
+    UniquePrimaryBlogPost category
 |]
 
 
