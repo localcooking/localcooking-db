@@ -11,7 +11,6 @@
 
 module LocalCooking.Database.Schema.Content where
 
-import LocalCooking.Common.Rating (Rating)
 import LocalCooking.Database.Schema (StoredEditorId, StoredUserId)
 import LocalCooking.Semantics.ContentRecord.Variant (ContentRecordVariant)
 import LocalCooking.Semantics.ContentRecord (ContentRecord)

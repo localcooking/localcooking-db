@@ -8,12 +8,11 @@
 module LocalCooking.Semantics.Content where
 
 import LocalCooking.Semantics.ContentRecord.Variant (ContentRecordVariant)
-import LocalCooking.Database.Schema (StoredUserId, StoredEditorId)
+import LocalCooking.Database.Schema (StoredEditorId)
 import LocalCooking.Common.User.Name (Name)
 
 import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object), (.=), object, (.:))
 import Data.Aeson.Types (typeMismatch)
-import Data.Time (UTCTime)
 import GHC.Generics (Generic)
 import Test.QuickCheck (Arbitrary (..))
 import Test.QuickCheck.Instances ()

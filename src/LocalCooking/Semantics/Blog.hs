@@ -6,7 +6,7 @@
 
 module LocalCooking.Semantics.Blog where
 
-import LocalCooking.Database.Schema (StoredUserId, StoredBlogPostId, StoredBlogPostCategoryId)
+import LocalCooking.Database.Schema (StoredBlogPostId, StoredBlogPostCategoryId)
 import LocalCooking.Common.User.Name (Name)
 import LocalCooking.Common.Blog (BlogPostVariant, BlogPostCategory, BlogPostPriority)
 
