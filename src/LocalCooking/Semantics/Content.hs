@@ -21,8 +21,11 @@ import Test.QuickCheck.Instances ()
 
 
 data SetEditor = SetEditor
-  { setEditorName :: Name
+  { setEditorName :: Maybe Name
   } deriving (Eq, Show, Generic)
+
+emptySetEditor :: SetEditor
+emptySetEditor = SetEditor Nothing
 
 instance Arbitrary SetEditor where
   arbitrary = SetEditor <$> arbitrary
@@ -36,6 +39,25 @@ instance FromJSON SetEditor where
   parseJSON json = case json of
     Object o -> SetEditor <$> o .: "name"
     _ -> typeMismatch "SetEditor" json
+
+
+
+data EditorValid = EditorValid
+  { editorValidName :: Name
+  } deriving (Eq, Show, Generic)
+
+instance Arbitrary EditorValid where
+  arbitrary = EditorValid <$> arbitrary
+
+instance ToJSON EditorValid where
+  toJSON EditorValid{..} = object
+    [ "name" .= editorValidName
+    ]
+
+instance FromJSON EditorValid where
+  parseJSON json = case json of
+    Object o -> EditorValid <$> o .: "name"
+    _ -> typeMismatch "EditorValid" json
 
 
 
