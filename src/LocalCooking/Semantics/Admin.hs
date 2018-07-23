@@ -22,6 +22,7 @@ import Test.QuickCheck.Instances ()
 
 
 
+-- | Possible modifications to a User entry
 data SetUser
   = SetUserUpdate
     { setUserUpdateUser :: User
@@ -83,7 +84,7 @@ instance FromJSON NewUser where
     _ -> typeMismatch "NewUser" json
 
 
-
+-- | Data-view for witnessing an editor's authority over a content variant
 data GetSetSubmissionPolicy = GetSetSubmissionPolicy
   { getSetSubmissionPolicyVariant    :: ContentRecordVariant
   , getSetSubmissionPolicyAdditional :: Int

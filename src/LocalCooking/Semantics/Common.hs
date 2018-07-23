@@ -85,17 +85,41 @@ instance FromJSON User where
                      <*> o .: "roles"
     _ -> typeMismatch "User" json
 
+
+-- | Manual tuple
+data ChangePassword = ChangePassword
+  { oldPassword :: HashedPassword
+  , newPassword :: HashedPassword
+  } deriving (Eq, Show, Generic)
+
+instance Arbitrary ChangePassword where
+  arbitrary = ChangePassword <$> arbitrary
+                              <*> arbitrary
+
+instance ToJSON ChangePassword where
+  toJSON ChangePassword{..} = object
+    [ "oldPassword" .= oldPassword
+    , "newPassword" .= newPassword
+    ]
+
+instance FromJSON ChangePassword where
+  parseJSON json = case json of
+    Object o -> ChangePassword <$> o .: "oldPassword"
+                                <*> o .: "newPassword"
+    _ -> typeMismatch "ChangePassword" json
+
+
+-- | Data-view for re-assigning customer details
+-- FIXME sparsely?
 data SetUser = SetUser
-  { setUserId          :: StoredUserId
-  , setUserEmail       :: EmailAddress
-  , setUserSocialLogin :: SocialLoginForm
-  , setUserOldPassword :: HashedPassword
-  , setUserNewPassword :: HashedPassword
+  { setUserId             :: StoredUserId
+  , setUserEmail          :: Maybe EmailAddress
+  , setUserSocialLogin    :: Maybe SocialLoginForm
+  , setUserChangePassword :: Maybe ChangePassword
   } deriving (Eq, Show, Generic)
 
 instance Arbitrary SetUser where
   arbitrary = SetUser <$> arbitrary
-                      <*> arbitrary
                       <*> arbitrary
                       <*> arbitrary
                       <*> arbitrary
@@ -105,8 +129,7 @@ instance ToJSON SetUser where
     [ "id" .= setUserId
     , "email" .= setUserEmail
     , "socialLogin" .= setUserSocialLogin
-    , "oldPassword" .= setUserOldPassword
-    , "newPassword" .= setUserNewPassword
+    , "changePassword" .= setUserChangePassword
     ]
 
 instance FromJSON SetUser where
@@ -114,11 +137,11 @@ instance FromJSON SetUser where
     Object o -> SetUser <$> o .: "id"
                         <*> o .: "email"
                         <*> o .: "socialLogin"
-                        <*> o .: "oldPassword"
-                        <*> o .: "newPassword"
+                        <*> o .: "changePassword"
     _ -> typeMismatch "SetUser" json
 
 
+-- | Data-view for registering a new user
 data Register = Register
   { registerEmail     :: EmailAddress
   , registerPassword  :: HashedPassword
@@ -215,7 +238,7 @@ instance FromJSON ConfirmEmailError where
       fail' = typeMismatch "ConfirmEmail" json
 
 
-
+-- | Normal authenticated logins
 data Login = Login
   { loginEmail    :: EmailAddress
   , loginPassword :: HashedPassword
@@ -238,6 +261,7 @@ instance FromJSON Login where
     _ -> typeMismatch "Login" json
 
 
+-- | Login from a 3rd party authority
 data SocialLogin
   = SocialLoginFB
     { socialLoginFB :: FacebookLoginCode

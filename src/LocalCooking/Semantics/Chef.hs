@@ -27,7 +27,8 @@ import Test.QuickCheck (Arbitrary (..))
 import Test.QuickCheck.Instances ()
 
 
--- unique key is tied to the user who submits it -- StoredUserId is a valid id
+-- * Profile
+
 data SetChef = SetChef
   { setChefName      :: Maybe Name
   , setChefPermalink :: Maybe Permalink
@@ -107,6 +108,7 @@ instance FromJSON ChefValid where
     _ -> typeMismatch "ChefValid" json
 
 
+-- * Subject Matter
 
 -- submission with a StoredMealId constitutes an update
 data MealSettings = MealSettings

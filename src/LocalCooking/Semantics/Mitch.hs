@@ -33,6 +33,66 @@ import Test.QuickCheck (Arbitrary (..))
 import Test.QuickCheck.Instances ()
 
 
+
+-- * Profile
+
+data SetCustomer = SetCustomer
+  { setCustomerName    :: Maybe Name
+  , setCustomerAddress :: Maybe USAAddress
+  } deriving (Eq, Show, Generic)
+
+emptySetCustomer :: SetCustomer
+emptySetCustomer = SetCustomer Nothing Nothing
+
+instance Arbitrary SetCustomer where
+  arbitrary = SetCustomer  <$> arbitrary
+                           <*> arbitrary
+
+instance ToJSON SetCustomer where
+  toJSON SetCustomer{..} = object
+    [ "name" .= setCustomerName
+    , "address" .= setCustomerAddress
+    ]
+
+instance FromJSON SetCustomer where
+  parseJSON json = case json of
+    Object o -> SetCustomer  <$> o .: "name"
+                             <*> o .: "address"
+    _ -> typeMismatch "SetCustomer" json
+
+data CustomerValid = CustomerValid
+  { customerValidName    :: Name
+  , customerValidAddress :: USAAddress
+  } deriving (Eq, Show, Generic)
+
+instance Arbitrary CustomerValid where
+  arbitrary = CustomerValid  <$> arbitrary
+                           <*> arbitrary
+
+instance ToJSON CustomerValid where
+  toJSON CustomerValid{..} = object
+    [ "name" .= customerValidName
+    , "address" .= customerValidAddress
+    ]
+
+instance FromJSON CustomerValid where
+  parseJSON json = case json of
+    Object o -> CustomerValid  <$> o .: "name"
+                             <*> o .: "address"
+    _ -> typeMismatch "CustomerValid" json
+
+
+-- ** Other Customer Components
+
+newtype Diets = Diets
+  { getDiets :: [DietTag]
+  } deriving (Eq, Show, Generic, Arbitrary, ToJSON, FromJSON)
+
+newtype Allergies = Allergies
+  { getAllergies :: [IngredientTag]
+  } deriving (Eq, Show, Generic, Arbitrary, ToJSON, FromJSON)
+
+
 -- * Reviews
 
 -- | Note that this is from the customers' public perspectives - in the Chef interface,
@@ -399,6 +459,8 @@ instance FromJSON Chef where
 
 
 
+-- * Cart Mechanics
+
 data Order = Order
   { orderMeal     :: MealSynopsis
   , orderProgress :: OrderProgress
@@ -425,60 +487,6 @@ instance FromJSON Order where
                       <*> o .: "volume"
     _ -> typeMismatch "Order" json
 
-
-
-data SetCustomer = SetCustomer
-  { setCustomerName    :: Maybe Name
-  , setCustomerAddress :: Maybe USAAddress
-  } deriving (Eq, Show, Generic)
-
-emptySetCustomer :: SetCustomer
-emptySetCustomer = SetCustomer Nothing Nothing
-
-instance Arbitrary SetCustomer where
-  arbitrary = SetCustomer  <$> arbitrary
-                           <*> arbitrary
-
-instance ToJSON SetCustomer where
-  toJSON SetCustomer{..} = object
-    [ "name" .= setCustomerName
-    , "address" .= setCustomerAddress
-    ]
-
-instance FromJSON SetCustomer where
-  parseJSON json = case json of
-    Object o -> SetCustomer  <$> o .: "name"
-                             <*> o .: "address"
-    _ -> typeMismatch "SetCustomer" json
-
-data CustomerValid = CustomerValid
-  { customerValidName    :: Name
-  , customerValidAddress :: USAAddress
-  } deriving (Eq, Show, Generic)
-
-instance Arbitrary CustomerValid where
-  arbitrary = CustomerValid  <$> arbitrary
-                           <*> arbitrary
-
-instance ToJSON CustomerValid where
-  toJSON CustomerValid{..} = object
-    [ "name" .= customerValidName
-    , "address" .= customerValidAddress
-    ]
-
-instance FromJSON CustomerValid where
-  parseJSON json = case json of
-    Object o -> CustomerValid  <$> o .: "name"
-                             <*> o .: "address"
-    _ -> typeMismatch "CustomerValid" json
-
-newtype Diets = Diets
-  { getDiets :: [DietTag]
-  } deriving (Eq, Show, Generic, Arbitrary, ToJSON, FromJSON)
-
-newtype Allergies = Allergies
-  { getAllergies :: [IngredientTag]
-  } deriving (Eq, Show, Generic, Arbitrary, ToJSON, FromJSON)
 
 
 
