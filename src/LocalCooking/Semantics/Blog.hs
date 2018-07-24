@@ -55,11 +55,13 @@ data GetBlogPostCategory = GetBlogPostCategory
   , getBlogPostCategoryPermalink :: Permalink
   , getBlogPostCategoryPrimary   :: Maybe BlogPostSynopsis
   , getBlogPostCategoryPosts     :: [BlogPostSynopsis]
+  , getBlogPostCategoryVariant   :: BlogPostVariant
   , getBlogPostCategoryId        :: StoredBlogPostCategoryId
   } deriving (Eq, Show, Generic)
 
 instance Arbitrary GetBlogPostCategory where
   arbitrary = GetBlogPostCategory <$> arbitrary
+                                  <*> arbitrary
                                   <*> arbitrary
                                   <*> arbitrary
                                   <*> arbitrary
@@ -71,6 +73,7 @@ instance ToJSON GetBlogPostCategory where
     , "permalink" .= getBlogPostCategoryPermalink
     , "primary" .= getBlogPostCategoryPrimary
     , "posts" .= getBlogPostCategoryPosts
+    , "variant" .= getBlogPostCategoryVariant
     , "id" .= getBlogPostCategoryId
     ]
 
@@ -80,6 +83,7 @@ instance FromJSON GetBlogPostCategory where
                                     <*> o .: "permalink"
                                     <*> o .: "primary"
                                     <*> o .: "posts"
+                                    <*> o .: "variant"
                                     <*> o .: "id"
     _ -> typeMismatch "GetBlogPostCategory" json
 
@@ -88,10 +92,12 @@ data NewBlogPostCategory = NewBlogPostCategory
   { newBlogPostCategoryName      :: BlogPostCategory
   , newBlogPostCategoryPermalink :: Permalink
   , newBlogPostCategoryPriority  :: BlogPostPriority
+  , newBlogPostCategoryVariant   :: BlogPostVariant
   } deriving (Eq, Show, Generic)
 
 instance Arbitrary NewBlogPostCategory where
   arbitrary = NewBlogPostCategory <$> arbitrary
+                                  <*> arbitrary
                                   <*> arbitrary
                                   <*> arbitrary
 
@@ -100,6 +106,7 @@ instance ToJSON NewBlogPostCategory where
     [ "name" .= newBlogPostCategoryName
     , "permalink" .= newBlogPostCategoryPermalink
     , "priority" .= newBlogPostCategoryPriority
+    , "variant" .= newBlogPostCategoryVariant
     ]
 
 instance FromJSON NewBlogPostCategory where
@@ -107,6 +114,7 @@ instance FromJSON NewBlogPostCategory where
     Object o -> NewBlogPostCategory <$> o .: "name"
                                     <*> o .: "permalink"
                                     <*> o .: "priority"
+                                    <*> o .: "variant"
     _ -> typeMismatch "NewBlogPostCategory" json
 
 
@@ -114,11 +122,13 @@ data SetBlogPostCategory = SetBlogPostCategory
   { setBlogPostCategoryName      :: BlogPostCategory
   , setBlogPostCategoryPermalink :: Permalink
   , setBlogPostCategoryPriority  :: BlogPostPriority
+  , setBlogPostCategoryVariant   :: BlogPostVariant
   , setBlogPostCategoryId        :: StoredBlogPostCategoryId
   } deriving (Eq, Show, Generic)
 
 instance Arbitrary SetBlogPostCategory where
   arbitrary = SetBlogPostCategory <$> arbitrary
+                                  <*> arbitrary
                                   <*> arbitrary
                                   <*> arbitrary
                                   <*> arbitrary
@@ -128,6 +138,7 @@ instance ToJSON SetBlogPostCategory where
     [ "name" .= setBlogPostCategoryName
     , "permalink" .= setBlogPostCategoryPermalink
     , "priority" .= setBlogPostCategoryPriority
+    , "variant" .= setBlogPostCategoryVariant
     , "id" .= setBlogPostCategoryId
     ]
 
@@ -136,6 +147,7 @@ instance FromJSON SetBlogPostCategory where
     Object o -> SetBlogPostCategory <$> o .: "name"
                                     <*> o .: "permalink"
                                     <*> o .: "priority"
+                                    <*> o .: "variant"
                                     <*> o .: "id"
     _ -> typeMismatch "SetBlogPostCategory" json
 
@@ -147,14 +159,12 @@ data BlogPostSynopsis = BlogPostSynopsis
   , blogPostSynopsisTimestamp :: UTCTime
   , blogPostSynopsisHeadline  :: Text
   , blogPostSynopsisPermalink :: Permalink
-  , blogPostSynopsisVariant   :: BlogPostVariant
   , blogPostSynopsisPriority  :: BlogPostPriority
   } deriving (Eq, Show, Generic)
 
 
 instance Arbitrary BlogPostSynopsis where
   arbitrary = BlogPostSynopsis <$> arbitrary
-                              <*> arbitrary
                               <*> arbitrary
                               <*> arbitrary
                               <*> arbitrary
@@ -166,7 +176,6 @@ instance ToJSON BlogPostSynopsis where
     , "timestamp" .= blogPostSynopsisTimestamp
     , "headline" .= blogPostSynopsisHeadline
     , "permalink" .= blogPostSynopsisPermalink
-    , "variant" .= blogPostSynopsisVariant
     , "priority" .= blogPostSynopsisPriority
     ]
 
@@ -176,7 +185,6 @@ instance FromJSON BlogPostSynopsis where
                                   <*> o .: "timestamp"
                                   <*> o .: "headline"
                                   <*> o .: "permalink"
-                                  <*> o .: "variant"
                                   <*> o .: "priority"
     _ -> typeMismatch "BlogPostSynopsis" json
 
@@ -187,7 +195,6 @@ data GetBlogPost = GetBlogPost
   , getBlogPostHeadline  :: Text
   , getBlogPostPermalink :: Permalink
   , getBlogPostContent   :: MarkdownText
-  , getBlogPostVariant   :: BlogPostVariant
   , getBlogPostPriority  :: BlogPostPriority
   , getBlogPostCategory  :: BlogPostCategory
   , getBlogPostId        :: StoredBlogPostId
@@ -203,7 +210,6 @@ instance Arbitrary GetBlogPost where
                           <*> arbitrary
                           <*> arbitrary
                           <*> arbitrary
-                          <*> arbitrary
 
 instance ToJSON GetBlogPost where
   toJSON GetBlogPost{..} = object
@@ -212,7 +218,6 @@ instance ToJSON GetBlogPost where
     , "headline" .= getBlogPostHeadline
     , "permalink" .= getBlogPostPermalink
     , "content" .= getBlogPostContent
-    , "variant" .= getBlogPostVariant
     , "priority" .= getBlogPostPriority
     , "category" .= getBlogPostCategory
     , "id" .= getBlogPostId
@@ -225,7 +230,6 @@ instance FromJSON GetBlogPost where
                             <*> o .: "headline"
                             <*> o .: "permalink"
                             <*> o .: "content"
-                            <*> o .: "variant"
                             <*> o .: "priority"
                             <*> o .: "category"
                             <*> o .: "id"
@@ -236,7 +240,6 @@ data NewBlogPost = NewBlogPost
   { newBlogPostHeadline  :: Text
   , newBlogPostPermalink :: Permalink
   , newBlogPostContent   :: MarkdownText
-  , newBlogPostVariant   :: BlogPostVariant
   , newBlogPostPriority  :: BlogPostPriority
   , newBlogPostCategory  :: StoredBlogPostCategoryId
   , newBlogPostPrimary   :: Bool
@@ -250,14 +253,12 @@ instance Arbitrary NewBlogPost where
                           <*> arbitrary
                           <*> arbitrary
                           <*> arbitrary
-                          <*> arbitrary
 
 instance ToJSON NewBlogPost where
   toJSON NewBlogPost{..} = object
     [ "headline" .= newBlogPostHeadline
     , "permalink" .= newBlogPostPermalink
     , "content" .= newBlogPostContent
-    , "variant" .= newBlogPostVariant
     , "priority" .= newBlogPostPriority
     , "category" .= newBlogPostCategory
     , "primary" .= newBlogPostPrimary
@@ -268,7 +269,6 @@ instance FromJSON NewBlogPost where
     Object o -> NewBlogPost <$> o .: "headline"
                             <*> o .: "permalink"
                             <*> o .: "content"
-                            <*> o .: "variant"
                             <*> o .: "priority"
                             <*> o .: "category"
                             <*> o .: "primary"
@@ -279,7 +279,6 @@ data SetBlogPost = SetBlogPost
   { setBlogPostHeadline  :: Text
   , setBlogPostPermalink :: Permalink
   , setBlogPostContent   :: MarkdownText
-  , setBlogPostVariant   :: BlogPostVariant
   , setBlogPostPriority  :: BlogPostPriority
   , setBlogPostPrimary   :: Bool
   , setBlogPostId        :: StoredBlogPostId
@@ -293,14 +292,12 @@ instance Arbitrary SetBlogPost where
                           <*> arbitrary
                           <*> arbitrary
                           <*> arbitrary
-                          <*> arbitrary
 
 instance ToJSON SetBlogPost where
   toJSON SetBlogPost{..} = object
     [ "headline" .= setBlogPostHeadline
     , "permalink" .= setBlogPostPermalink
     , "content" .= setBlogPostContent
-    , "variant" .= setBlogPostVariant
     , "priority" .= setBlogPostPriority
     , "primary" .= setBlogPostPrimary
     , "id" .= setBlogPostId
@@ -311,7 +308,6 @@ instance FromJSON SetBlogPost where
     Object o -> SetBlogPost <$> o .: "headline"
                             <*> o .: "permalink"
                             <*> o .: "content"
-                            <*> o .: "variant"
                             <*> o .: "priority"
                             <*> o .: "primary"
                             <*> o .: "id"

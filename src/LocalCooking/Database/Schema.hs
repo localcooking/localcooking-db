@@ -303,7 +303,6 @@ StoredBlogPost
     headline Text
     permalink Permalink
     content MarkdownText
-    variant BlogPostVariant
     priority BlogPostPriority
     category' StoredBlogPostCategoryId
     UniqueBlogPost category' permalink
@@ -313,7 +312,8 @@ StoredBlogPostCategory
     name BlogPostCategory
     priority BlogPostPriority
     permalink Permalink
-    UniqueBlogPostCategory permalink
+    variant BlogPostVariant
+    UniqueBlogPostCategory variant permalink
 
 StoredBlogPostPrimary
     post StoredBlogPostId
