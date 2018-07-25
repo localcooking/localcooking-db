@@ -285,27 +285,3 @@ instance FromJSON SocialLogin where
     _ -> typeMismatch "SocialLogin" json
 
 
-
--- | Segregated record key from semantic datum
-data WithId k a = WithId
-  { withIdId :: k
-  , withIdContent :: a
-  } deriving (Eq, Show, Generic)
-
-instance (Arbitrary k, Arbitrary a) => Arbitrary (WithId k a) where
-  arbitrary = WithId <$> arbitrary <*> arbitrary
-
-instance (ToJSON k, ToJSON a) => ToJSON (WithId k a) where
-  toJSON WithId{..} = object
-    [ "id" .= withIdId
-    , "content" .= withIdContent
-    ]
-
-instance (FromJSON k, FromJSON a) => FromJSON (WithId k a) where
-  parseJSON json = case json of
-    Object o -> WithId <$> o .: "id" <*> o .: "content"
-    _ -> typeMismatch "WithId" json
-
-
-uncurryWithId :: (k -> a -> b) -> WithId k a -> b
-uncurryWithId f (WithId k a) = f k a

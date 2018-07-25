@@ -9,7 +9,6 @@ module LocalCooking.Semantics.ContentRecord where
 
 import LocalCooking.Semantics.ContentRecord.Variant
   ( ContentRecordVariant (..), TagRecordVariant (..), ChefRecordVariant (..), ProfileRecordVariant (..))
-import LocalCooking.Semantics.Common (WithId)
 import LocalCooking.Semantics.Chef (SetChef, MealSettings, MenuSettings)
 import LocalCooking.Semantics.Mitch (SetCustomer)
 import LocalCooking.Semantics.Content (SetEditor)
@@ -23,6 +22,7 @@ import LocalCooking.Common.Tag.Meal (MealTag)
 
 import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object), (.=), object, (.:))
 import Data.Aeson.Types (typeMismatch)
+import Data.Aeson.JSONTuple (JSONTuple)
 import Control.Applicative ((<|>))
 import Database.Persist.TH (derivePersistFieldJSON)
 import GHC.Generics (Generic)
@@ -88,10 +88,10 @@ tagRecordVariant x = case x of
 
 
 data ChefRecord
-  = ChefRecordSetMenu (WithId StoredMenuId MenuSettings)
+  = ChefRecordSetMenu (JSONTuple StoredMenuId MenuSettings)
   | ChefRecordNewMenu MenuSettings
-  | ChefRecordSetMeal (WithId StoredMenuId (WithId StoredMealId MealSettings))
-  | ChefRecordNewMeal (WithId StoredMenuId MealSettings)
+  | ChefRecordSetMeal (JSONTuple StoredMenuId (JSONTuple StoredMealId MealSettings))
+  | ChefRecordNewMeal (JSONTuple StoredMenuId MealSettings)
   deriving (Eq, Show, Generic)
 derivePersistFieldJSON "ChefRecord"
 
