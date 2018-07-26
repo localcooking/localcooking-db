@@ -88,6 +88,7 @@ instance FromJSON GetBlogPostCategory where
     _ -> typeMismatch "GetBlogPostCategory" json
 
 
+
 data NewBlogPostCategory = NewBlogPostCategory
   { newBlogPostCategoryName      :: BlogPostCategory
   , newBlogPostCategoryPermalink :: Permalink
