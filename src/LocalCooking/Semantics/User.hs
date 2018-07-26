@@ -3,6 +3,7 @@
   , RecordWildCards
   , DeriveGeneric
   , TemplateHaskell
+  , DeriveFunctor
   #-}
 
 module LocalCooking.Semantics.User where
@@ -29,7 +30,7 @@ import Test.QuickCheck.Instances ()
 data UserExists a
   = UserDoesntExist
   | UserExists a
-  deriving (Eq, Show, Generic)
+  deriving (Eq, Show, Generic, Functor)
 
 instance Arbitrary a => Arbitrary (UserExists a) where
   arbitrary = oneof
@@ -53,7 +54,7 @@ instance FromJSON a => FromJSON (UserExists a) where
 data HasRole a
   = DoesntHaveRole
   | HasRole a
-  deriving (Eq, Show, Generic)
+  deriving (Eq, Show, Generic, Functor)
 
 instance Arbitrary a => Arbitrary (HasRole a) where
   arbitrary = oneof
