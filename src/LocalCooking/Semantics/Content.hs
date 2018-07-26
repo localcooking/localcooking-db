@@ -127,3 +127,42 @@ instance FromJSON a => FromJSON (SubmissionPolicy a) where
     _ -> fail'
     where
       fail' = typeMismatch "SubmissionPolicy" x
+
+
+data SubmissionExists a
+  = NoSubmissionExists
+  | SubmissionExists a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative SubmissionExists where
+  pure = SubmissionExists
+  (<*>) f x = case f of
+    NoSubmissionExists -> NoSubmissionExists
+    SubmissionExists f' -> f' <$> x
+
+instance Monad SubmissionExists where
+  return = pure
+  (>>=) x f = case x of
+    NoSubmissionExists -> NoSubmissionExists
+    SubmissionExists x' -> f x'
+
+instance Arbitrary a => Arbitrary (SubmissionExists a) where
+  arbitrary = oneof
+    [ pure NoSubmissionExists
+    , SubmissionExists <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (SubmissionExists a) where
+  toJSON x = case x of
+    NoSubmissionExists -> String "noSubmissionExists"
+    SubmissionExists a -> object ["submissionExists" .= a]
+
+instance FromJSON a => FromJSON (SubmissionExists a) where
+  parseJSON x = case x of
+    String s
+      | s == "noSubmissionExists" -> pure NoSubmissionExists
+      | otherwise -> fail'
+    Object o -> SubmissionExists <$> o .: "submissionExists"
+    _ -> fail'
+    where
+      fail' = typeMismatch "SubmissionExists" x
