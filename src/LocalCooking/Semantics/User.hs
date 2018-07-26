@@ -52,25 +52,23 @@ instance FromJSON a => FromJSON (UserExists a) where
 
 data HasRole a
   = DoesntHaveRole
-  | HasRole UserRole a
+  | HasRole a
   deriving (Eq, Show, Generic)
 
 instance Arbitrary a => Arbitrary (HasRole a) where
   arbitrary = oneof
     [ pure DoesntHaveRole
-    , HasRole <$> arbitrary <*> arbitrary
+    , HasRole <$> arbitrary
     ]
 
 instance ToJSON a => ToJSON (HasRole a) where
   toJSON x = case x of
     DoesntHaveRole -> String "doesntHaveRole"
-    HasRole role a -> object [T.pack (show role) .= a]
+    HasRole a -> object ["hasRole" .= a]
 
 instance FromJSON a => FromJSON (HasRole a) where
   parseJSON x = case x of
     String s
       | s == "doesntHaveRole" -> pure DoesntHaveRole
       | otherwise -> typeMismatch "HasRole" x
-    Object o -> do
-      let getRole role = HasRole role <$> o .: T.pack (show role)
-      asum (map getRole [minBound .. maxBound])
+    Object o -> HasRole <$> o .: "hasRole"
