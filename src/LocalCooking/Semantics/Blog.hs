@@ -2,6 +2,7 @@
     OverloadedStrings
   , RecordWildCards
   , DeriveGeneric
+  , DeriveFunctor
   #-}
 
 module LocalCooking.Semantics.Blog where
@@ -14,10 +15,11 @@ import Data.Text (Text)
 import Data.Text.Permalink (Permalink)
 import Data.Text.Markdown (MarkdownText)
 import Data.Time (UTCTime)
-import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object), (.=), object, (.:))
+import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object, String), (.=), object, (.:))
 import Data.Aeson.Types (typeMismatch)
 import GHC.Generics (Generic)
 import Test.QuickCheck (Arbitrary (..))
+import Test.QuickCheck.Gen (oneof)
 import Test.QuickCheck.Instances ()
 
 
@@ -313,3 +315,84 @@ instance FromJSON SetBlogPost where
                             <*> o .: "primary"
                             <*> o .: "id"
     _ -> typeMismatch "SetBlogPost" json
+
+
+
+-- * Errors
+
+data BlogPostCategoryExists a
+  = BlogPostCategoryDoesntExist
+  | BlogPostCategoryExists a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative BlogPostCategoryExists where
+  pure = BlogPostCategoryExists
+  (<*>) f x = case f of
+    BlogPostCategoryDoesntExist -> BlogPostCategoryDoesntExist
+    BlogPostCategoryExists f' -> f' <$> x
+
+instance Monad BlogPostCategoryExists where
+  return = pure
+  (>>=) x f = case x of
+    BlogPostCategoryDoesntExist -> BlogPostCategoryDoesntExist
+    BlogPostCategoryExists x' -> f x'
+
+instance Arbitrary a => Arbitrary (BlogPostCategoryExists a) where
+  arbitrary = oneof
+    [ pure BlogPostCategoryDoesntExist
+    , BlogPostCategoryExists <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (BlogPostCategoryExists a) where
+  toJSON x = case x of
+    BlogPostCategoryDoesntExist -> String "blogPostCategoryDoesntExist"
+    BlogPostCategoryExists a -> object ["blogPostCategoryExists" .= a]
+
+instance FromJSON a => FromJSON (BlogPostCategoryExists a) where
+  parseJSON x = case x of
+    String s
+      | s == "blogPostCategoryDoesntExist" -> pure BlogPostCategoryDoesntExist
+      | otherwise -> fail'
+    Object o -> BlogPostCategoryExists <$> o .: "blogPostCategoryExists"
+    _ -> fail'
+    where
+      fail' = typeMismatch "BlogPostCategoryExists" x
+
+
+data BlogPostExists a
+  = BlogPostDoesntExist
+  | BlogPostExists a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative BlogPostExists where
+  pure = BlogPostExists
+  (<*>) f x = case f of
+    BlogPostDoesntExist -> BlogPostDoesntExist
+    BlogPostExists f' -> f' <$> x
+
+instance Monad BlogPostExists where
+  return = pure
+  (>>=) x f = case x of
+    BlogPostDoesntExist -> BlogPostDoesntExist
+    BlogPostExists x' -> f x'
+
+instance Arbitrary a => Arbitrary (BlogPostExists a) where
+  arbitrary = oneof
+    [ pure BlogPostDoesntExist
+    , BlogPostExists <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (BlogPostExists a) where
+  toJSON x = case x of
+    BlogPostDoesntExist -> String "blogPostDoesntExist"
+    BlogPostExists a -> object ["blogPostExists" .= a]
+
+instance FromJSON a => FromJSON (BlogPostExists a) where
+  parseJSON x = case x of
+    String s
+      | s == "blogPostDoesntExist" -> pure BlogPostDoesntExist
+      | otherwise -> fail'
+    Object o -> BlogPostExists <$> o .: "blogPostExists"
+    _ -> fail'
+    where
+      fail' = typeMismatch "BlogPostExists" x
