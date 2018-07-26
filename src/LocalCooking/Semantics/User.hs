@@ -59,8 +59,11 @@ instance FromJSON a => FromJSON (UserExists a) where
   parseJSON x = case x of
     String s
       | s == "userDoesntExist" -> pure UserDoesntExist
-      | otherwise -> typeMismatch "UserExists" x
+      | otherwise -> fail'
     Object o -> UserExists <$> o .: "userExists"
+    _ -> fail'
+    where
+      fail' = typeMismatch "UserExists" x
 
 
 data HasRole a
@@ -95,5 +98,8 @@ instance FromJSON a => FromJSON (HasRole a) where
   parseJSON x = case x of
     String s
       | s == "doesntHaveRole" -> pure DoesntHaveRole
-      | otherwise -> typeMismatch "HasRole" x
+      | otherwise -> fail'
     Object o -> HasRole <$> o .: "hasRole"
+    _ -> fail'
+    where
+      fail' = typeMismatch "HasRole" x

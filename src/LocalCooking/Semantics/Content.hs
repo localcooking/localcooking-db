@@ -2,6 +2,7 @@
     OverloadedStrings
   , RecordWildCards
   , DeriveGeneric
+  , DeriveFunctor
   , TemplateHaskell
   #-}
 
@@ -11,10 +12,11 @@ import LocalCooking.Semantics.ContentRecord.Variant (ContentRecordVariant)
 import LocalCooking.Database.Schema (StoredEditorId)
 import LocalCooking.Common.User.Name (Name)
 
-import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object), (.=), object, (.:))
+import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object, String), (.=), object, (.:))
 import Data.Aeson.Types (typeMismatch)
 import GHC.Generics (Generic)
 import Test.QuickCheck (Arbitrary (..))
+import Test.QuickCheck.Gen (oneof)
 import Test.QuickCheck.Instances ()
 
 
@@ -84,3 +86,44 @@ instance FromJSON GetRecordSubmissionPolicy where
                                           <*> o .: "additional"
                                           <*> o .: "assigned"
     _ -> typeMismatch "GetRecordSubmissionPolicy" json
+
+
+-- * Errors
+
+data SubmissionPolicy a
+  = NoSubmissionPolicy
+  | SubmissionPolicy a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative SubmissionPolicy where
+  pure = SubmissionPolicy
+  (<*>) f x = case f of
+    NoSubmissionPolicy -> NoSubmissionPolicy
+    SubmissionPolicy f' -> f' <$> x
+
+instance Monad SubmissionPolicy where
+  return = pure
+  (>>=) x f = case x of
+    NoSubmissionPolicy -> NoSubmissionPolicy
+    SubmissionPolicy x' -> f x'
+
+instance Arbitrary a => Arbitrary (SubmissionPolicy a) where
+  arbitrary = oneof
+    [ pure NoSubmissionPolicy
+    , SubmissionPolicy <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (SubmissionPolicy a) where
+  toJSON x = case x of
+    NoSubmissionPolicy -> String "noSubmissionPolicy"
+    SubmissionPolicy a -> object ["submissionPolicy" .= a]
+
+instance FromJSON a => FromJSON (SubmissionPolicy a) where
+  parseJSON x = case x of
+    String s
+      | s == "noSubmissionPolicy" -> pure NoSubmissionPolicy
+      | otherwise -> fail'
+    Object o -> SubmissionPolicy <$> o .: "submissionPolicy"
+    _ -> fail'
+    where
+      fail' = typeMismatch "SubmissionPolicy" x
