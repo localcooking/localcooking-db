@@ -358,6 +358,44 @@ instance FromJSON a => FromJSON (BlogPostCategoryExists a) where
     where
       fail' = typeMismatch "BlogPostCategoryExists" x
 
+data BlogPostCategoryUnique a
+  = BlogPostCategoryNotUnique
+  | BlogPostCategoryUnique a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative BlogPostCategoryUnique where
+  pure = BlogPostCategoryUnique
+  (<*>) f x = case f of
+    BlogPostCategoryNotUnique -> BlogPostCategoryNotUnique
+    BlogPostCategoryUnique f' -> f' <$> x
+
+instance Monad BlogPostCategoryUnique where
+  return = pure
+  (>>=) x f = case x of
+    BlogPostCategoryNotUnique -> BlogPostCategoryNotUnique
+    BlogPostCategoryUnique x' -> f x'
+
+instance Arbitrary a => Arbitrary (BlogPostCategoryUnique a) where
+  arbitrary = oneof
+    [ pure BlogPostCategoryNotUnique
+    , BlogPostCategoryUnique <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (BlogPostCategoryUnique a) where
+  toJSON x = case x of
+    BlogPostCategoryNotUnique -> String "blogPostCategoryNotUnique"
+    BlogPostCategoryUnique a -> object ["blogPostCategoryUnique" .= a]
+
+instance FromJSON a => FromJSON (BlogPostCategoryUnique a) where
+  parseJSON x = case x of
+    String s
+      | s == "blogPostCategoryNotUnique" -> pure BlogPostCategoryNotUnique
+      | otherwise -> fail'
+    Object o -> BlogPostCategoryUnique <$> o .: "blogPostCategoryUnique"
+    _ -> fail'
+    where
+      fail' = typeMismatch "BlogPostCategoryUnique" x
+
 
 data BlogPostExists a
   = BlogPostDoesntExist
