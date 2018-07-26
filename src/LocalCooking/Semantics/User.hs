@@ -32,6 +32,18 @@ data UserExists a
   | UserExists a
   deriving (Eq, Show, Generic, Functor)
 
+instance Applicative UserExists where
+  pure = UserExists
+  (<*>) f x = case f of
+    UserDoesntExist -> UserDoesntExist
+    UserExists f' -> f' <$> x
+
+instance Monad UserExists where
+  return = pure
+  (>>=) x f = case x of
+    UserDoesntExist -> UserDoesntExist
+    UserExists x' -> f x'
+
 instance Arbitrary a => Arbitrary (UserExists a) where
   arbitrary = oneof
     [ pure UserDoesntExist
@@ -55,6 +67,18 @@ data HasRole a
   = DoesntHaveRole
   | HasRole a
   deriving (Eq, Show, Generic, Functor)
+
+instance Applicative HasRole where
+  pure = HasRole
+  (<*>) f x = case f of
+    DoesntHaveRole -> DoesntHaveRole
+    HasRole f' -> f' <$> x
+
+instance Monad HasRole where
+  return = pure
+  (>>=) x f = case x of
+    DoesntHaveRole -> DoesntHaveRole
+    HasRole x' -> f x'
 
 instance Arbitrary a => Arbitrary (HasRole a) where
   arbitrary = oneof
