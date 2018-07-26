@@ -130,37 +130,37 @@ instance FromJSON a => FromJSON (SubmissionPolicy a) where
 
 
 data SubmissionExists a
-  = NoSubmissionExists
+  = SubmissionDoesntExist
   | SubmissionExists a
   deriving (Eq, Show, Generic, Functor)
 
 instance Applicative SubmissionExists where
   pure = SubmissionExists
   (<*>) f x = case f of
-    NoSubmissionExists -> NoSubmissionExists
+    SubmissionDoesntExist -> SubmissionDoesntExist
     SubmissionExists f' -> f' <$> x
 
 instance Monad SubmissionExists where
   return = pure
   (>>=) x f = case x of
-    NoSubmissionExists -> NoSubmissionExists
+    SubmissionDoesntExist -> SubmissionDoesntExist
     SubmissionExists x' -> f x'
 
 instance Arbitrary a => Arbitrary (SubmissionExists a) where
   arbitrary = oneof
-    [ pure NoSubmissionExists
+    [ pure SubmissionDoesntExist
     , SubmissionExists <$> arbitrary
     ]
 
 instance ToJSON a => ToJSON (SubmissionExists a) where
   toJSON x = case x of
-    NoSubmissionExists -> String "noSubmissionExists"
+    SubmissionDoesntExist -> String "submissionDoesntExist"
     SubmissionExists a -> object ["submissionExists" .= a]
 
 instance FromJSON a => FromJSON (SubmissionExists a) where
   parseJSON x = case x of
     String s
-      | s == "noSubmissionExists" -> pure NoSubmissionExists
+      | s == "submissionDoesntExist" -> pure SubmissionDoesntExist
       | otherwise -> fail'
     Object o -> SubmissionExists <$> o .: "submissionExists"
     _ -> fail'
