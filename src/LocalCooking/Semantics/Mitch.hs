@@ -905,3 +905,43 @@ instance FromJSON a => FromJSON (MenuUnique a) where
     _ -> fail'
     where
       fail' = typeMismatch "MenuUnique" x
+
+
+
+data MealUnique a
+  = MealNotUnique
+  | MealUnique a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative MealUnique where
+  pure = MealUnique
+  (<*>) f x = case f of
+    MealNotUnique -> MealNotUnique
+    MealUnique f' -> f' <$> x
+
+instance Monad MealUnique where
+  return = pure
+  (>>=) x f = case x of
+    MealNotUnique -> MealNotUnique
+    MealUnique x' -> f x'
+
+instance Arbitrary a => Arbitrary (MealUnique a) where
+  arbitrary = oneof
+    [ pure MealNotUnique
+    , MealUnique <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (MealUnique a) where
+  toJSON x = case x of
+    MealNotUnique -> String "mealNotUnique"
+    MealUnique a -> object ["mealUnique" .= a]
+
+instance FromJSON a => FromJSON (MealUnique a) where
+  parseJSON x = case x of
+    String s
+      | s == "mealNotUnique" -> pure MealNotUnique
+      | otherwise -> fail'
+    Object o -> MealUnique <$> o .: "mealUnique"
+    _ -> fail'
+    where
+      fail' = typeMismatch "MealUnique" x
