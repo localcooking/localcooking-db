@@ -671,6 +671,11 @@ data ReviewExists a
   | ReviewExists a
   deriving (Eq, Show, Generic, Functor)
 
+reviewExistsToMaybe :: ReviewExists a -> Maybe a
+reviewExistsToMaybe x = case x of
+  ReviewDoesntExist -> Nothing
+  ReviewExists y -> Just y
+
 instance Applicative ReviewExists where
   pure = ReviewExists
   (<*>) f x = case f of
