@@ -749,6 +749,11 @@ data MenuExists a
   | MenuExists a
   deriving (Eq, Show, Generic, Functor)
 
+menuExistsToMaybe :: MenuExists a -> Maybe a
+menuExistsToMaybe x = case x of
+  MenuDoesntExist -> Nothing
+  MenuExists y -> Just y
+
 instance Applicative MenuExists where
   pure = MenuExists
   (<*>) f x = case f of
