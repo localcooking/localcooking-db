@@ -821,3 +821,43 @@ instance FromJSON a => FromJSON (ChefExists a) where
     _ -> fail'
     where
       fail' = typeMismatch "ChefExists" x
+
+
+
+data ChefUnique a
+  = ChefNotUnique
+  | ChefUnique a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative ChefUnique where
+  pure = ChefUnique
+  (<*>) f x = case f of
+    ChefNotUnique -> ChefNotUnique
+    ChefUnique f' -> f' <$> x
+
+instance Monad ChefUnique where
+  return = pure
+  (>>=) x f = case x of
+    ChefNotUnique -> ChefNotUnique
+    ChefUnique x' -> f x'
+
+instance Arbitrary a => Arbitrary (ChefUnique a) where
+  arbitrary = oneof
+    [ pure ChefNotUnique
+    , ChefUnique <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (ChefUnique a) where
+  toJSON x = case x of
+    ChefNotUnique -> String "chefNotUnique"
+    ChefUnique a -> object ["chefUnique" .= a]
+
+instance FromJSON a => FromJSON (ChefUnique a) where
+  parseJSON x = case x of
+    String s
+      | s == "chefNotUnique" -> pure ChefNotUnique
+      | otherwise -> fail'
+    Object o -> ChefUnique <$> o .: "chefUnique"
+    _ -> fail'
+    where
+      fail' = typeMismatch "ChefUnique" x
