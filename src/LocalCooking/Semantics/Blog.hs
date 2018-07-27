@@ -434,3 +434,41 @@ instance FromJSON a => FromJSON (BlogPostExists a) where
     _ -> fail'
     where
       fail' = typeMismatch "BlogPostExists" x
+
+data BlogPostUnique a
+  = BlogPostNotUnique
+  | BlogPostUnique a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative BlogPostUnique where
+  pure = BlogPostUnique
+  (<*>) f x = case f of
+    BlogPostNotUnique -> BlogPostNotUnique
+    BlogPostUnique f' -> f' <$> x
+
+instance Monad BlogPostUnique where
+  return = pure
+  (>>=) x f = case x of
+    BlogPostNotUnique -> BlogPostNotUnique
+    BlogPostUnique x' -> f x'
+
+instance Arbitrary a => Arbitrary (BlogPostUnique a) where
+  arbitrary = oneof
+    [ pure BlogPostNotUnique
+    , BlogPostUnique <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (BlogPostUnique a) where
+  toJSON x = case x of
+    BlogPostNotUnique -> String "blogPostNotUnique"
+    BlogPostUnique a -> object ["blogPostUnique" .= a]
+
+instance FromJSON a => FromJSON (BlogPostUnique a) where
+  parseJSON x = case x of
+    String s
+      | s == "blogPostNotUnique" -> pure BlogPostNotUnique
+      | otherwise -> fail'
+    Object o -> BlogPostUnique <$> o .: "blogPostUnique"
+    _ -> fail'
+    where
+      fail' = typeMismatch "BlogPostUnique" x

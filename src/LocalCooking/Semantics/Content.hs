@@ -166,3 +166,42 @@ instance FromJSON a => FromJSON (SubmissionExists a) where
     _ -> fail'
     where
       fail' = typeMismatch "SubmissionExists" x
+
+
+data EditorExists a
+  = EditorDoesntExist
+  | EditorExists a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative EditorExists where
+  pure = EditorExists
+  (<*>) f x = case f of
+    EditorDoesntExist -> EditorDoesntExist
+    EditorExists f' -> f' <$> x
+
+instance Monad EditorExists where
+  return = pure
+  (>>=) x f = case x of
+    EditorDoesntExist -> EditorDoesntExist
+    EditorExists x' -> f x'
+
+instance Arbitrary a => Arbitrary (EditorExists a) where
+  arbitrary = oneof
+    [ pure EditorDoesntExist
+    , EditorExists <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (EditorExists a) where
+  toJSON x = case x of
+    EditorDoesntExist -> String "editorDoesntExist"
+    EditorExists a -> object ["editorExists" .= a]
+
+instance FromJSON a => FromJSON (EditorExists a) where
+  parseJSON x = case x of
+    String s
+      | s == "editorDoesntExist" -> pure EditorDoesntExist
+      | otherwise -> fail'
+    Object o -> EditorExists <$> o .: "editorExists"
+    _ -> fail'
+    where
+      fail' = typeMismatch "EditorExists" x
