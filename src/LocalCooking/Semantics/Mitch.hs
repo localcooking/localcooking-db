@@ -709,6 +709,11 @@ data RatingExists a
   | RatingExists a
   deriving (Eq, Show, Generic, Functor)
 
+ratingExistsToMaybe :: RatingExists a -> Maybe a
+ratingExistsToMaybe x = case x of
+  RatingDoesntExist -> Nothing
+  RatingExists y -> Just y
+
 instance Applicative RatingExists where
   pure = RatingExists
   (<*>) f x = case f of
@@ -747,6 +752,11 @@ data MealExists a
   = MealDoesntExist
   | MealExists a
   deriving (Eq, Show, Generic, Functor)
+
+mealExistsToMaybe :: MealExists a -> Maybe a
+mealExistsToMaybe x = case x of
+  MealDoesntExist -> Nothing
+  MealExists y -> Just y
 
 instance Applicative MealExists where
   pure = MealExists
