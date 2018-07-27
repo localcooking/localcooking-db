@@ -2,6 +2,7 @@
     OverloadedStrings
   , RecordWildCards
   , DeriveGeneric
+  , DeriveFunctor
   , NamedFieldPuns
   , GeneralizedNewtypeDeriving
   #-}
@@ -26,10 +27,11 @@ import Data.Text (Text)
 import Data.Text.Permalink (Permalink)
 import Data.Text.Markdown (MarkdownText)
 import Data.Time.Calendar (Day)
-import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object), (.=), object, (.:))
+import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object, String), (.=), object, (.:))
 import Data.Aeson.Types (typeMismatch)
 import GHC.Generics (Generic)
 import Test.QuickCheck (Arbitrary (..))
+import Test.QuickCheck.Gen (oneof)
 import Test.QuickCheck.Instances ()
 
 
@@ -543,3 +545,122 @@ instance FromJSON CartEntry where
                           <*> o .: "volume"
                           <*> o .: "added"
     _ -> typeMismatch "CartEntry" json
+
+
+-- * Errors
+
+data CustomerExists a
+  = CustomerDoesntExist
+  | CustomerExists a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative CustomerExists where
+  pure = CustomerExists
+  (<*>) f x = case f of
+    CustomerDoesntExist -> CustomerDoesntExist
+    CustomerExists f' -> f' <$> x
+
+instance Monad CustomerExists where
+  return = pure
+  (>>=) x f = case x of
+    CustomerDoesntExist -> CustomerDoesntExist
+    CustomerExists x' -> f x'
+
+instance Arbitrary a => Arbitrary (CustomerExists a) where
+  arbitrary = oneof
+    [ pure CustomerDoesntExist
+    , CustomerExists <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (CustomerExists a) where
+  toJSON x = case x of
+    CustomerDoesntExist -> String "customerDoesntExist"
+    CustomerExists a -> object ["customerExists" .= a]
+
+instance FromJSON a => FromJSON (CustomerExists a) where
+  parseJSON x = case x of
+    String s
+      | s == "customerDoesntExist" -> pure CustomerDoesntExist
+      | otherwise -> fail'
+    Object o -> CustomerExists <$> o .: "customerExists"
+    _ -> fail'
+    where
+      fail' = typeMismatch "CustomerExists" x
+
+
+data CustomerUnique a
+  = CustomerNotUnique
+  | CustomerUnique a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative CustomerUnique where
+  pure = CustomerUnique
+  (<*>) f x = case f of
+    CustomerNotUnique -> CustomerNotUnique
+    CustomerUnique f' -> f' <$> x
+
+instance Monad CustomerUnique where
+  return = pure
+  (>>=) x f = case x of
+    CustomerNotUnique -> CustomerNotUnique
+    CustomerUnique x' -> f x'
+
+instance Arbitrary a => Arbitrary (CustomerUnique a) where
+  arbitrary = oneof
+    [ pure CustomerNotUnique
+    , CustomerUnique <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (CustomerUnique a) where
+  toJSON x = case x of
+    CustomerNotUnique -> String "customerNotUnique"
+    CustomerUnique a -> object ["customerUnique" .= a]
+
+instance FromJSON a => FromJSON (CustomerUnique a) where
+  parseJSON x = case x of
+    String s
+      | s == "customerNotUnique" -> pure CustomerNotUnique
+      | otherwise -> fail'
+    Object o -> CustomerUnique <$> o .: "customerUnique"
+    _ -> fail'
+    where
+      fail' = typeMismatch "CustomerUnique" x
+
+
+data OrderExists a
+  = OrderDoesntExist
+  | OrderExists a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative OrderExists where
+  pure = OrderExists
+  (<*>) f x = case f of
+    OrderDoesntExist -> OrderDoesntExist
+    OrderExists f' -> f' <$> x
+
+instance Monad OrderExists where
+  return = pure
+  (>>=) x f = case x of
+    OrderDoesntExist -> OrderDoesntExist
+    OrderExists x' -> f x'
+
+instance Arbitrary a => Arbitrary (OrderExists a) where
+  arbitrary = oneof
+    [ pure OrderDoesntExist
+    , OrderExists <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (OrderExists a) where
+  toJSON x = case x of
+    OrderDoesntExist -> String "orderDoesntExist"
+    OrderExists a -> object ["orderExists" .= a]
+
+instance FromJSON a => FromJSON (OrderExists a) where
+  parseJSON x = case x of
+    String s
+      | s == "orderDoesntExist" -> pure OrderDoesntExist
+      | otherwise -> fail'
+    Object o -> OrderExists <$> o .: "orderExists"
+    _ -> fail'
+    where
+      fail' = typeMismatch "OrderExists" x
