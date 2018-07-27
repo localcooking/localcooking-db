@@ -742,3 +742,82 @@ instance FromJSON a => FromJSON (MealExists a) where
     _ -> fail'
     where
       fail' = typeMismatch "MealExists" x
+
+
+data MenuExists a
+  = MenuDoesntExist
+  | MenuExists a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative MenuExists where
+  pure = MenuExists
+  (<*>) f x = case f of
+    MenuDoesntExist -> MenuDoesntExist
+    MenuExists f' -> f' <$> x
+
+instance Monad MenuExists where
+  return = pure
+  (>>=) x f = case x of
+    MenuDoesntExist -> MenuDoesntExist
+    MenuExists x' -> f x'
+
+instance Arbitrary a => Arbitrary (MenuExists a) where
+  arbitrary = oneof
+    [ pure MenuDoesntExist
+    , MenuExists <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (MenuExists a) where
+  toJSON x = case x of
+    MenuDoesntExist -> String "menuDoesntExist"
+    MenuExists a -> object ["menuExists" .= a]
+
+instance FromJSON a => FromJSON (MenuExists a) where
+  parseJSON x = case x of
+    String s
+      | s == "menuDoesntExist" -> pure MenuDoesntExist
+      | otherwise -> fail'
+    Object o -> MenuExists <$> o .: "menuExists"
+    _ -> fail'
+    where
+      fail' = typeMismatch "MenuExists" x
+
+
+
+data ChefExists a
+  = ChefDoesntExist
+  | ChefExists a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative ChefExists where
+  pure = ChefExists
+  (<*>) f x = case f of
+    ChefDoesntExist -> ChefDoesntExist
+    ChefExists f' -> f' <$> x
+
+instance Monad ChefExists where
+  return = pure
+  (>>=) x f = case x of
+    ChefDoesntExist -> ChefDoesntExist
+    ChefExists x' -> f x'
+
+instance Arbitrary a => Arbitrary (ChefExists a) where
+  arbitrary = oneof
+    [ pure ChefDoesntExist
+    , ChefExists <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (ChefExists a) where
+  toJSON x = case x of
+    ChefDoesntExist -> String "chefDoesntExist"
+    ChefExists a -> object ["chefExists" .= a]
+
+instance FromJSON a => FromJSON (ChefExists a) where
+  parseJSON x = case x of
+    String s
+      | s == "chefDoesntExist" -> pure ChefDoesntExist
+      | otherwise -> fail'
+    Object o -> ChefExists <$> o .: "chefExists"
+    _ -> fail'
+    where
+      fail' = typeMismatch "ChefExists" x
