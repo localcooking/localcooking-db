@@ -33,6 +33,11 @@ data TagExists a
   | TagExists a
   deriving (Eq, Show, Generic, Functor)
 
+tagExistsToMaybe :: TagExists a -> Maybe a
+tagExistsToMaybe x = case x of
+  TagDoesntExist -> Nothing
+  TagExists y -> Just y
+
 instance Applicative TagExists where
   pure = TagExists
   (<*>) f x = case f of
