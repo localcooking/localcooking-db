@@ -945,3 +945,43 @@ instance FromJSON a => FromJSON (MealUnique a) where
     _ -> fail'
     where
       fail' = typeMismatch "MealUnique" x
+
+
+
+data MenuPublished a
+  = MenuNotPublished
+  | MenuPublished a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative MenuPublished where
+  pure = MenuPublished
+  (<*>) f x = case f of
+    MenuNotPublished -> MenuNotPublished
+    MenuPublished f' -> f' <$> x
+
+instance Monad MenuPublished where
+  return = pure
+  (>>=) x f = case x of
+    MenuNotPublished -> MenuNotPublished
+    MenuPublished x' -> f x'
+
+instance Arbitrary a => Arbitrary (MenuPublished a) where
+  arbitrary = oneof
+    [ pure MenuNotPublished
+    , MenuPublished <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (MenuPublished a) where
+  toJSON x = case x of
+    MenuNotPublished -> String "menuNotPublished"
+    MenuPublished a -> object ["menuPublished" .= a]
+
+instance FromJSON a => FromJSON (MenuPublished a) where
+  parseJSON x = case x of
+    String s
+      | s == "menuNotPublished" -> pure MenuNotPublished
+      | otherwise -> fail'
+    Object o -> MenuPublished <$> o .: "menuPublished"
+    _ -> fail'
+    where
+      fail' = typeMismatch "MenuPublished" x
