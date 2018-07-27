@@ -703,3 +703,42 @@ instance FromJSON a => FromJSON (ReviewExists a) where
     _ -> fail'
     where
       fail' = typeMismatch "ReviewExists" x
+
+
+data MealExists a
+  = MealDoesntExist
+  | MealExists a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative MealExists where
+  pure = MealExists
+  (<*>) f x = case f of
+    MealDoesntExist -> MealDoesntExist
+    MealExists f' -> f' <$> x
+
+instance Monad MealExists where
+  return = pure
+  (>>=) x f = case x of
+    MealDoesntExist -> MealDoesntExist
+    MealExists x' -> f x'
+
+instance Arbitrary a => Arbitrary (MealExists a) where
+  arbitrary = oneof
+    [ pure MealDoesntExist
+    , MealExists <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (MealExists a) where
+  toJSON x = case x of
+    MealDoesntExist -> String "mealDoesntExist"
+    MealExists a -> object ["mealExists" .= a]
+
+instance FromJSON a => FromJSON (MealExists a) where
+  parseJSON x = case x of
+    String s
+      | s == "mealDoesntExist" -> pure MealDoesntExist
+      | otherwise -> fail'
+    Object o -> MealExists <$> o .: "mealExists"
+    _ -> fail'
+    where
+      fail' = typeMismatch "MealExists" x
