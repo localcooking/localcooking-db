@@ -2,6 +2,7 @@
     OverloadedStrings
   , RecordWildCards
   , DeriveGeneric
+  , DeriveFunctor
   #-}
 
 module LocalCooking.Semantics.Chef where
@@ -20,10 +21,11 @@ import Data.Text.Permalink (Permalink)
 import Data.Text.Markdown (MarkdownText)
 import Data.Time (UTCTime)
 import Data.Time.Calendar (Day)
-import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object), (.=), object, (.:))
+import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object, String), (.=), object, (.:))
 import Data.Aeson.Types (typeMismatch)
 import GHC.Generics (Generic)
 import Test.QuickCheck (Arbitrary (..))
+import Test.QuickCheck.Gen (oneof)
 import Test.QuickCheck.Instances ()
 
 
@@ -232,3 +234,84 @@ instance FromJSON Order where
                       <*> o .: "id"
                       <*> o .: "time"
     _ -> typeMismatch "Order" json
+
+
+-- * Errors
+
+data ChefExists a
+  = ChefDoesntExist
+  | ChefExists a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative ChefExists where
+  pure = ChefExists
+  (<*>) f x = case f of
+    ChefDoesntExist -> ChefDoesntExist
+    ChefExists f' -> f' <$> x
+
+instance Monad ChefExists where
+  return = pure
+  (>>=) x f = case x of
+    ChefDoesntExist -> ChefDoesntExist
+    ChefExists x' -> f x'
+
+instance Arbitrary a => Arbitrary (ChefExists a) where
+  arbitrary = oneof
+    [ pure ChefDoesntExist
+    , ChefExists <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (ChefExists a) where
+  toJSON x = case x of
+    ChefDoesntExist -> String "chefDoesntExist"
+    ChefExists a -> object ["chefExists" .= a]
+
+instance FromJSON a => FromJSON (ChefExists a) where
+  parseJSON x = case x of
+    String s
+      | s == "chefDoesntExist" -> pure ChefDoesntExist
+      | otherwise -> fail'
+    Object o -> ChefExists <$> o .: "chefExists"
+    _ -> fail'
+    where
+      fail' = typeMismatch "ChefExists" x
+
+
+
+data ChefUnique a
+  = ChefNotUnique
+  | ChefUnique a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative ChefUnique where
+  pure = ChefUnique
+  (<*>) f x = case f of
+    ChefNotUnique -> ChefNotUnique
+    ChefUnique f' -> f' <$> x
+
+instance Monad ChefUnique where
+  return = pure
+  (>>=) x f = case x of
+    ChefNotUnique -> ChefNotUnique
+    ChefUnique x' -> f x'
+
+instance Arbitrary a => Arbitrary (ChefUnique a) where
+  arbitrary = oneof
+    [ pure ChefNotUnique
+    , ChefUnique <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (ChefUnique a) where
+  toJSON x = case x of
+    ChefNotUnique -> String "chefNotUnique"
+    ChefUnique a -> object ["chefUnique" .= a]
+
+instance FromJSON a => FromJSON (ChefUnique a) where
+  parseJSON x = case x of
+    String s
+      | s == "chefNotUnique" -> pure ChefNotUnique
+      | otherwise -> fail'
+    Object o -> ChefUnique <$> o .: "chefUnique"
+    _ -> fail'
+    where
+      fail' = typeMismatch "ChefUnique" x
