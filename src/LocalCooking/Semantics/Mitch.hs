@@ -664,3 +664,42 @@ instance FromJSON a => FromJSON (OrderExists a) where
     _ -> fail'
     where
       fail' = typeMismatch "OrderExists" x
+
+
+data ReviewExists a
+  = ReviewDoesntExist
+  | ReviewExists a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative ReviewExists where
+  pure = ReviewExists
+  (<*>) f x = case f of
+    ReviewDoesntExist -> ReviewDoesntExist
+    ReviewExists f' -> f' <$> x
+
+instance Monad ReviewExists where
+  return = pure
+  (>>=) x f = case x of
+    ReviewDoesntExist -> ReviewDoesntExist
+    ReviewExists x' -> f x'
+
+instance Arbitrary a => Arbitrary (ReviewExists a) where
+  arbitrary = oneof
+    [ pure ReviewDoesntExist
+    , ReviewExists <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (ReviewExists a) where
+  toJSON x = case x of
+    ReviewDoesntExist -> String "reviewDoesntExist"
+    ReviewExists a -> object ["reviewExists" .= a]
+
+instance FromJSON a => FromJSON (ReviewExists a) where
+  parseJSON x = case x of
+    String s
+      | s == "reviewDoesntExist" -> pure ReviewDoesntExist
+      | otherwise -> fail'
+    Object o -> ReviewExists <$> o .: "reviewExists"
+    _ -> fail'
+    where
+      fail' = typeMismatch "ReviewExists" x
