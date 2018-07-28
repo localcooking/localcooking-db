@@ -103,3 +103,42 @@ instance FromJSON a => FromJSON (HasRole a) where
     _ -> fail'
     where
       fail' = typeMismatch "HasRole" x
+
+
+data UserUnique a
+  = UserNotUnique
+  | UserUnique a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative UserUnique where
+  pure = UserUnique
+  (<*>) f x = case f of
+    UserNotUnique -> UserNotUnique
+    UserUnique f' -> f' <$> x
+
+instance Monad UserUnique where
+  return = pure
+  (>>=) x f = case x of
+    UserNotUnique -> UserNotUnique
+    UserUnique x' -> f x'
+
+instance Arbitrary a => Arbitrary (UserUnique a) where
+  arbitrary = oneof
+    [ pure UserNotUnique
+    , UserUnique <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (UserUnique a) where
+  toJSON x = case x of
+    UserNotUnique -> String "userNotUnique"
+    UserUnique a -> object ["userUnique" .= a]
+
+instance FromJSON a => FromJSON (UserUnique a) where
+  parseJSON x = case x of
+    String s
+      | s == "userNotUnique" -> pure UserNotUnique
+      | otherwise -> fail'
+    Object o -> UserUnique <$> o .: "userUnique"
+    _ -> fail'
+    where
+      fail' = typeMismatch "UserUnique" x
