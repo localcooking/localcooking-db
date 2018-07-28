@@ -2,6 +2,7 @@
     OverloadedStrings
   , RecordWildCards
   , DeriveGeneric
+  , DeriveFunctor
   #-}
 
 module LocalCooking.Semantics.Admin where
@@ -11,7 +12,7 @@ import LocalCooking.Semantics.Common (User)
 import LocalCooking.Semantics.ContentRecord.Variant (ContentRecordVariant)
 import LocalCooking.Common.User.Password (HashedPassword)
 
-import Data.Aeson (FromJSON (..), ToJSON (..), Value (Object), object, (.=), (.:))
+import Data.Aeson (FromJSON (..), ToJSON (..), Value (Object, String), object, (.=), (.:))
 import Data.Aeson.Types (typeMismatch)
 import Control.Applicative ((<|>))
 import Text.EmailAddress (EmailAddress)
@@ -109,3 +110,46 @@ instance FromJSON GetSetSubmissionPolicy where
                                        <*> o .: "additional"
                                        <*> o .: "assigned"
     _ -> typeMismatch "GetSetSubmissionPolicy" json
+
+
+-- * Errors
+
+
+
+data SubmissionPolicyUnique a
+  = SubmissionPolicyNotUnique
+  | SubmissionPolicyUnique a
+  deriving (Eq, Show, Generic, Functor)
+
+instance Applicative SubmissionPolicyUnique where
+  pure = SubmissionPolicyUnique
+  (<*>) f x = case f of
+    SubmissionPolicyNotUnique -> SubmissionPolicyNotUnique
+    SubmissionPolicyUnique f' -> f' <$> x
+
+instance Monad SubmissionPolicyUnique where
+  return = pure
+  (>>=) x f = case x of
+    SubmissionPolicyNotUnique -> SubmissionPolicyNotUnique
+    SubmissionPolicyUnique x' -> f x'
+
+instance Arbitrary a => Arbitrary (SubmissionPolicyUnique a) where
+  arbitrary = oneof
+    [ pure SubmissionPolicyNotUnique
+    , SubmissionPolicyUnique <$> arbitrary
+    ]
+
+instance ToJSON a => ToJSON (SubmissionPolicyUnique a) where
+  toJSON x = case x of
+    SubmissionPolicyNotUnique -> String "submissionPolicyNotUnique"
+    SubmissionPolicyUnique a -> object ["submissionPolicyUnique" .= a]
+
+instance FromJSON a => FromJSON (SubmissionPolicyUnique a) where
+  parseJSON x = case x of
+    String s
+      | s == "submissionPolicyNotUnique" -> pure SubmissionPolicyNotUnique
+      | otherwise -> fail'
+    Object o -> SubmissionPolicyUnique <$> o .: "submissionPolicyUnique"
+    _ -> fail'
+    where
+      fail' = typeMismatch "SubmissionPolicyUnique" x
