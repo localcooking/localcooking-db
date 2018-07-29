@@ -38,6 +38,7 @@ dependencies:
 - mtl
 - persistent
 - persistent-template
+- purescript-iso
 - QuickCheck
 - quickcheck-instances
 - resourcet
