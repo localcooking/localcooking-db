@@ -547,6 +547,81 @@ instance FromJSON CartEntry where
     _ -> typeMismatch "CartEntry" json
 
 
+-- * Browse
+
+data BrowseMenu = BrowseMenu
+  { browseMenuChef :: Permalink
+  , browseMenuDeadline :: Day
+  } deriving (Eq, Show, Generic)
+
+uncurryBrowseMenu :: (Permalink -> Day -> a) -> BrowseMenu -> a
+uncurryBrowseMenu f (BrowseMenu a b) = f a b
+
+instance ToJSON BrowseMenu where
+  toJSON BrowseMenu{..} = object
+    [ "chef" .= browseMenuChef
+    , "deadline" .= browseMenuDeadline
+    ]
+
+instance FromJSON BrowseMenu where
+  parseJSON json = case json of
+    Object o -> BrowseMenu <$> o .: "chef" <*> o .: "deadline"
+    _ -> typeMismatch "BrowseMenu" json
+
+
+data BrowseMeal = BrowseMeal
+  { browseMealChef     :: Permalink
+  , browseMealDeadline :: Day
+  , browseMealMeal     :: Permalink
+  } deriving (Eq, Show, Generic)
+
+uncurryBrowseMeal :: (Permalink -> Day -> Permalink -> a) -> BrowseMeal -> a
+uncurryBrowseMeal f (BrowseMeal a b c) = f a b c
+
+instance ToJSON BrowseMeal where
+  toJSON BrowseMeal{..} = object
+    [ "chef" .= browseMealChef
+    , "deadline" .= browseMealDeadline
+    , "meal" .= browseMealMeal
+    ]
+
+instance FromJSON BrowseMeal where
+  parseJSON json = case json of
+    Object o -> BrowseMeal <$> o .: "chef" <*> o .: "deadline" <*> o .: "meal"
+    _ -> typeMismatch "BrowseMeal" json
+
+
+data AddToCart = AddToCart
+  { addToCartChef     :: Permalink
+  , addToCartDeadline :: Day
+  , addToCartMeal     :: Permalink
+  , addToCartVolume   :: Int
+  } deriving (Eq, Show, Generic)
+
+uncurryAddToCart :: (Permalink -> Day -> Permalink -> Int -> a) -> AddToCart -> a
+uncurryAddToCart f (AddToCart a b c d) = f a b c d
+
+instance ToJSON AddToCart where
+  toJSON AddToCart{..} = object
+    [ "chef" .= addToCartChef
+    , "deadline" .= addToCartDeadline
+    , "meal" .= addToCartMeal
+    , "volume" .= addToCartVolume
+    ]
+
+instance FromJSON AddToCart where
+  parseJSON json = case json of
+    Object o -> AddToCart <$> o .: "chef"
+                          <*> o .: "deadline"
+                          <*> o .: "meal"
+                          <*> o .: "volume"
+    _ -> typeMismatch "AddToCart" json
+
+
+
+
+
+
 -- * Errors
 
 data CustomerExists a
