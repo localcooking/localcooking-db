@@ -36,7 +36,9 @@ resolver: lts-11.2
 packages:
 - .
 - ../localcooking-shared
-- ../localcooking-fb
+- ../template/template-facebook
+- ../template/template-google
+- ../template/template-dictionary
 - location:
     git: git@git.localcooking.com:private-tooling/emailaddress.git
     commit: d4c426e1a9c6d5b53be4782b072cf0746049bfa7

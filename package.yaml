@@ -24,7 +24,9 @@ ghc-options:
 
 dependencies:
 - base >= 4.8 && < 5
-- localcooking-fb
+- template-dictionary
+- template-google
+- template-facebook
 - localcooking-shared
 - aeson
 - aeson-attoparsec

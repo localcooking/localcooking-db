@@ -7,8 +7,8 @@
 module LocalCooking.Semantics.Farm where
 
 import LocalCooking.Common.Tag.Farm (FarmTag)
-import LocalCooking.Common.User.Name (Name)
 
+import Data.Name (Name)
 import Data.Price (Price)
 import Data.Image.Source (ImageSource)
 import Data.Text (Text)

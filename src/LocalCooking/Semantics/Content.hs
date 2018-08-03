@@ -10,8 +10,8 @@ module LocalCooking.Semantics.Content where
 
 import LocalCooking.Semantics.ContentRecord.Variant (ContentRecordVariant)
 import LocalCooking.Database.Schema (StoredEditorId)
-import LocalCooking.Common.User.Name (Name)
 
+import Data.Name (Name)
 import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object, String), (.=), object, (.:))
 import Data.Aeson.Types (typeMismatch)
 import GHC.Generics (Generic)

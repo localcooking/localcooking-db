@@ -9,8 +9,8 @@
 module LocalCooking.Semantics.Validate where
 
 import LocalCooking.Common.User.Role (UserRole)
-import LocalCooking.Common.User.Password (HashedPassword)
 
+import Data.Password (HashedPassword)
 import Data.Aeson (FromJSON (..), ToJSON (toJSON), Value (Object, String), (.=), object, (.:))
 import Data.Aeson.Types (typeMismatch)
 import Data.Traversable (traverse)

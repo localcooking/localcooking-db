@@ -7,11 +7,11 @@
 module LocalCooking.Semantics.Common where
 
 import LocalCooking.Database.Schema (StoredUserId)
-import LocalCooking.Common.User.Password (HashedPassword)
 import LocalCooking.Common.User.Role (UserRole)
 import Facebook.Types (FacebookLoginCode, FacebookUserId)
 import Google.Keys (ReCaptchaResponse)
 
+import Data.Password (HashedPassword)
 import Data.Time (UTCTime)
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (String, Object), object, (.=), (.:))
 import Data.Aeson.Types (typeMismatch)

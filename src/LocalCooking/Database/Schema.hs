@@ -13,9 +13,7 @@ module LocalCooking.Database.Schema where
 
 import LocalCooking.Common.Order (OrderProgress)
 import LocalCooking.Common.Rating (Rating)
-import LocalCooking.Common.User.Name (Name)
 import LocalCooking.Common.User.Role (UserRole)
-import LocalCooking.Common.User.Password (HashedPassword (..))
 import LocalCooking.Common.Tag.Chef (ChefTag)
 import LocalCooking.Common.Tag.Culture (CultureTag)
 import LocalCooking.Common.Tag.Diet (DietTag)
@@ -26,6 +24,8 @@ import LocalCooking.Common.Ingredient (Ingredient (..))
 import LocalCooking.Common.Blog (BlogPostVariant, BlogPostPriority, BlogPostCategory)
 import Facebook.Types (FacebookUserId, FacebookUserAccessToken)
 
+import Data.Password (HashedPassword (..))
+import Data.Name (Name)
 import Data.Image.Source (ImageSource)
 import Data.Text (Text)
 import Data.Text.Markdown (MarkdownText)

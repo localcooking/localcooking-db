@@ -8,9 +8,9 @@
 module LocalCooking.Semantics.Blog where
 
 import LocalCooking.Database.Schema (StoredBlogPostId, StoredBlogPostCategoryId)
-import LocalCooking.Common.User.Name (Name)
 import LocalCooking.Common.Blog (BlogPostVariant, BlogPostCategory, BlogPostPriority)
 
+import Data.Name (Name)
 import Data.Text (Text)
 import Data.Text.Permalink (Permalink)
 import Data.Text.Markdown (MarkdownText)
